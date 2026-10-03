@@ -1,0 +1,444 @@
+You are the technical architect and lead developer for my hackathon project:
+
+أُنملة | UNMULAH
+Tagline: وصول القرآن لكل إنسان
+
+IMPORTANT:
+This is PHASE 0 ONLY.
+DO NOT write application code.
+DO NOT install packages.
+DO NOT create or modify project files yet.
+DO NOT deploy anything.
+DO NOT start training any model.
+First study the attached files carefully and produce a technical implementation plan for my approval.
+
+========================
+SOURCE PRIORITY
+========================
+
+Read all attached files first.
+
+If there is any conflict, follow this priority:
+
+1. Official Scientific Package of the hackathon
+2. Official Participant Guide
+3. Instructions in this prompt
+4. Preliminary UNMULAH presentation/deck
+5. Your own assumptions
+
+The preliminary presentation explains the original idea, but the project has been refined since it was created. Therefore, do NOT blindly implement everything in the old deck.
+
+========================
+PROJECT VISION
+========================
+
+UNMULAH is a Sign-first intelligent Islamic accessibility platform designed primarily for Deaf people and sign-language users.
+
+The initial focus is Quran learning and memorization review.
+
+The long-term vision is broader:
+Quran learning → trusted Islamic knowledge → introduction to Islam → new Muslim learning journey → other Islamic educational experiences.
+
+However, the hackathon MVP must stay focused and realistic.
+
+========================
+CORE PROBLEM
+========================
+
+Many Quran recitation-assessment tools are voice-first.
+
+A hearing user can recite into a microphone and receive automated feedback.
+
+A Deaf/sign-language user does not have an equivalent integrated experience for:
+
+Learn → Hide → Recite visually → See what AI understood → Detect errors → Correct → Track progress.
+
+UNMULAH aims to fill this interaction gap.
+
+========================
+MVP CORE FLOW
+========================
+
+The MVP should initially work end-to-end with one Surah only:
+
+Surah Al-Ikhlas.
+
+After the complete flow works, other short Surahs may be added.
+
+User journey:
+
+1. Open UNMULAH
+2. Choose Quran learning
+3. Select Surah Al-Ikhlas
+4. View trusted Quran text
+5. Learn/review
+6. Hide the Quran text
+7. Start visual recitation
+8. Browser requests camera permission
+9. Camera detects the user's hand
+10. AI recognizes Arabic fingerspelling / educational signing input
+11. The recognized letter must immediately appear on screen
+12. Build a live recognized sequence
+13. User finishes recitation
+14. Compare recognized sequence with the expected Quran reference
+15. Detect errors where feasible:
+   - deletion
+   - insertion
+   - substitution
+   - sequence/order errors
+16. Show clear visual feedback
+17. Save attempt/progress locally
+
+========================
+VERY IMPORTANT UX FEATURE
+========================
+
+We need a "Live Sign Transcript" similar to live speech transcription.
+
+Example:
+
+User performs a hand sign.
+
+The interface immediately displays:
+
+"فهمت الإشارة: ب"
+
+and optionally:
+
+"الثقة: 92%"
+
+If the user intended "ا" but the AI recognized "ب", the user must be able to see that immediately.
+
+Do not silently build the sequence without showing what the AI recognized.
+
+Use temporal stability before accepting a letter.
+
+For example:
+if prediction remains stable for several frames / a short duration, accept it.
+
+If confidence is low or predictions fluctuate, do NOT guess.
+
+Show:
+
+"لم أتمكن من التعرف على الإشارة بوضوح، حاول مرة أخرى."
+
+A manual confirm/retry interaction may be used if that improves reliability.
+
+Also consider a simple demo page:
+
+"جرّب الإشارة"
+
+Camera → hand → predicted Arabic letter + confidence.
+
+This could be useful for judging/demo purposes.
+
+========================
+AI ARCHITECTURE
+========================
+
+There are TWO completely different AI problems in this project.
+
+Do not confuse them.
+
+A) PERCEPTION AI — CORE MVP
+
+Used for hand/fingerspelling recognition.
+
+Possible pipeline:
+
+Camera
+→ MediaPipe Hands / Hand Landmarker
+→ 21 hand landmarks
+→ normalized landmark features
+→ lightweight classifier
+→ Arabic letter prediction
+→ confidence
+→ temporal stability
+→ confirmed sequence
+→ sequence comparison
+→ feedback
+
+We prefer lightweight client-side inference if practical.
+
+Privacy preference:
+Raw camera video should remain on the user's device whenever possible.
+Do not record or upload video unless absolutely necessary.
+
+B) KNOWLEDGE AI — OPTIONAL / STRETCH
+
+If we later add an Islamic knowledge assistant, use:
+
+LLM + RAG + trusted Islamic sources
+
+Do NOT fine-tune an LLM just to teach it Quran/Tafsir.
+
+RAG is NOT used for recognizing hand signs.
+
+RAG is a stretch goal and must NOT delay the core visual recitation MVP.
+
+========================
+MODEL STRATEGY
+========================
+
+Do NOT immediately train a sign-recognition model from scratch.
+
+Use this strategy:
+
+Plan A:
+Evaluate whether an existing suitable pretrained Arabic sign/fingerspelling model can be reused.
+
+Prefer lightweight models compatible with:
+MediaPipe landmarks / TensorFlow Lite / ONNX / browser inference.
+
+Plan B:
+If pretrained performance is insufficient, train or retrain a lightweight classifier using an appropriate licensed Arabic fingerspelling dataset.
+
+Plan C:
+Only consider custom data collection if necessary.
+
+Before selecting any external model or dataset, document:
+
+- source
+- license
+- classes supported
+- expected input
+- hand orientation assumptions
+- limitations
+- suitability for our use case
+
+Do not fabricate accuracy numbers.
+
+We must run our own evaluation and document real results.
+
+========================
+RELIGIOUS / SCIENTIFIC SAFETY
+========================
+
+Follow the attached Scientific Package strictly.
+
+The application must distinguish clearly between:
+
+A. Quran Arabic text
+B. Tafsir / interpretation of meanings
+C. Sign-language interpretation of meanings
+D. AI recognition of user performance
+
+Do NOT:
+
+- generate Quran verses using an LLM
+- paraphrase Quran as Quran
+- let AI invent Tafsir
+- let AI invent religious signs
+- call sign-language interpretation of meanings "Quran translated into sign language"
+- issue personal fatwas
+- fabricate Islamic sources
+
+Preferred terminology includes:
+
+"تفسير معاني القرآن الكريم بلغة الإشارة"
+
+For memorization assessment, the system recognizes the user's educational/fingerspelling performance and compares it to a trusted Quran reference.
+
+The AI is an assessment tool, not a religious authority.
+
+Every Islamic source used in the product must be documented.
+
+========================
+APPLICATION TYPE
+========================
+
+Preferred product:
+
+Responsive Arabic-first PWA / Web App.
+
+Reasons:
+
+- easy Live Demo
+- accessible by URL
+- works on mobile and desktop
+- camera access
+- fast hackathon deployment
+- can later be installable
+
+The application must be RTL-first.
+
+Core functionality must not depend on audio.
+
+========================
+DESIGN
+========================
+
+Use the attached UNMULAH logo/brand reference.
+
+Current preferred palette:
+
+Primary emerald: #075B48
+Deep green: #033F34
+Mint: #AEE8BE
+Sage: #D9E6D2
+Ivory: #F8F5EE
+Muted gold: #C9A96A
+Charcoal: #18211D
+
+Style:
+premium Islamic-tech
+calm
+accessible
+minimal
+visual-first
+Arabic-first
+rounded modern UI
+subtle Islamic arch references
+
+Avoid generic purple/blue AI dashboard styling.
+
+========================
+DATA / PRIVACY
+========================
+
+Prefer local/browser inference.
+
+Camera should activate only when needed.
+
+Raw video should not be stored by default.
+
+No unnecessary personal data.
+
+No face recognition.
+
+No identity inference.
+
+Progress may initially use LocalStorage instead of requiring accounts or a backend database.
+
+========================
+GITHUB / HACKATHON
+========================
+
+This project is connected to a GitHub repository.
+
+Eventually we need:
+
+- complete publishable source code
+- README
+- setup/run instructions
+- dependencies
+- source log
+- model/dataset license documentation
+- architecture documentation
+- privacy documentation
+- limitations
+- test report
+- model card if applicable
+- no passwords/API keys/secrets committed
+
+But DO NOT create these files in Phase 0.
+Only plan them.
+
+========================
+MVP VS FUTURE
+========================
+
+CORE MVP:
+
+- Arabic-first PWA
+- Quran module
+- Al-Ikhlas
+- trusted Quran text
+- camera
+- hand detection
+- Arabic fingerspelling recognition
+- live recognized letter
+- confidence
+- temporal stability
+- recognized sequence
+- Quran reference comparison
+- error feedback
+- progress
+- sources
+- privacy
+- live deployable demo
+
+STRETCH ONLY AFTER CORE WORKS:
+
+- more Surahs
+- RAG Islamic assistant
+- "تعرف على الإسلام"
+- gamification / حديقة أُنملة
+- additional sign languages
+- voice recitation
+- continuous sign-language recognition
+- institutional dashboards
+
+Do not implement stretch goals before the complete MVP works.
+
+========================
+PHASE 0 — YOUR TASK NOW
+========================
+
+Do not code.
+
+Study the attached materials and return:
+
+1. Your understanding of UNMULAH in 5-10 lines.
+
+2. Final MVP scope.
+
+3. Explicit OUT-OF-SCOPE list for the hackathon MVP.
+
+4. Recommended architecture.
+
+5. Recommended technology stack, with reasoning.
+
+6. Camera / Computer Vision data flow.
+
+7. Quran reference and content data flow.
+
+8. Privacy data flow.
+
+9. Proposed folder/project structure.
+
+10. Recommended strategy for pretrained model vs training our own model.
+
+11. How you would implement the Live Sign Transcript:
+   "فهمت الإشارة: [letter]"
+   confidence
+   stability
+   confirm/retry behavior.
+
+12. Sequence-building and Quran comparison approach.
+
+13. Proposed project phases from Phase 1 until deployment.
+
+For every phase include:
+- goal
+- files/components involved
+- acceptance criteria
+- dependencies
+- risks
+
+14. Top 10 technical risks and mitigation strategy.
+
+15. External datasets/models/services you think may be required.
+Do NOT install or download them yet.
+
+16. Any licensing or religious-content risks you detect.
+
+17. Anything missing from the attached files that you need from me.
+
+18. Any conflict you found between:
+- Scientific Package
+- Participant Guide
+- Preliminary deck
+- this specification
+
+19. Estimate the technical difficulty of each major component:
+Easy / Medium / Hard
+
+20. Recommend the smallest path that can produce a stable, judgeable, fully working product within the hackathon.
+
+IMPORTANT:
+Stop after presenting the Phase 0 plan.
+
+Do NOT begin Phase 1 until I explicitly write:
+
+APPROVE PHASE 1
