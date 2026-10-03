@@ -1,0 +1,1 @@
+- [UNMULAH sign-recognition scope](unmulah-sign-recognition-scope.md) — MVP means Arabic letter-by-letter fingerspelling, not broad sign-language translation or continuous recognition.

@@ -1,0 +1,234 @@
+APPROVE PHASE 1 — WITH THE FOLLOWING CLARIFICATIONS.
+
+Your Phase 0 plan is approved with these amendments and decisions.
+
+IMPORTANT:
+Implement PHASE 1 ONLY.
+Do not begin Phase 2 or AI model integration yet.
+When Phase 1 is complete, test it, report exactly what you changed, and STOP for my approval.
+
+========================
+DECISIONS / CLARIFICATIONS
+========================
+
+1. MVP INPUT
+
+For the hackathon MVP, the intended visual input is:
+
+Arabic letter-by-letter fingerspelling.
+
+Do NOT describe the MVP as full Saudi Sign Language recognition, continuous sign-language recognition, or Quran translation into sign language.
+
+The exact recognition convention will be validated in Phase 2 against the selected model/classes.
+
+2. QURAN SOURCE
+
+Use the King Fahd Glorious Quran Printing Complex developer Quran data / verified Hafs Quran source as the authoritative Quran reference.
+
+For Phase 1:
+- Surah Al-Ikhlas only.
+- Preserve the verified display text unchanged.
+- Keep source metadata.
+- Do not use an LLM to generate, reconstruct, or correct Quran text.
+- Do not add Tafsir yet.
+- Do not implement comparison normalization yet beyond defining the future interface/place for it.
+
+3. PRETRAINED MODEL CANDIDATE FOR PHASE 2
+
+We have identified this candidate for later evaluation:
+
+Hugging Face:
+katyy2000/arabic-sign-language-recognition
+
+Reported architecture:
+MediaPipe hand landmarks
+21 landmarks × 3 coordinates = 63 input features
+MLP classifier
+Keras / TFLite formats
+MIT license
+
+This is a CANDIDATE ONLY.
+
+Do NOT download or integrate it in Phase 1.
+In Phase 2 we will inspect:
+- encoder/classes
+- preprocessing assumptions
+- handedness
+- normalization
+- real camera performance
+- license
+- accuracy on our own test samples
+
+Do not copy published claims as our own measured results.
+
+4. DATASET CANDIDATE FOR PLAN B
+
+If the pretrained model is unsuitable, a candidate dataset is:
+
+ArSL-31-Pilot
+Zenodo DOI: 10.5281/zenodo.18363162
+
+Reported:
+- 7,010 samples
+- 28 Arabic letters
+- Space / Delete / Finish controls
+- right-hand landmark data
+- CC BY 4.0
+
+IMPORTANT:
+Do NOT assume this dataset is directly compatible with the pretrained model.
+
+The dataset has a different feature representation from the 63-feature pretrained model pipeline.
+
+Do not download or train with it during Phase 1.
+
+5. HANDEDNESS
+
+Do not make unsupported claims about left-hand support.
+
+Phase 2 must determine what the selected model actually supports.
+
+If necessary, right-hand-only support may be documented as an MVP limitation while we test whether safe mirroring/canonicalization can support left-hand users.
+
+6. LIVE SIGN TRANSCRIPT
+
+This remains a required CORE feature for later phases:
+
+فهمت الإشارة: [الحرف]
+
+with:
+- confidence
+- candidate vs accepted state
+- temporal stability
+- retry
+- confirm
+- undo
+- visible recognized sequence
+
+However, in Phase 1 create only the UI structure/placeholders needed for this flow.
+
+DO NOT fake predictions, fake confidence percentages, or pretend AI is running.
+
+7. PRIVACY
+
+Maintain the architecture decision:
+- local/browser-first inference
+- no video upload by default
+- no camera recording
+- no face recognition
+- no unnecessary accounts
+- LocalStorage for minimal progress
+
+8. EVENT TIMELINE NOTE
+
+The written participant guide states October 4–6.
+
+During the live organizer session, participants were told they may begin development from October 2.
+
+Treat the live instruction as the latest operational instruction for our work.
+
+This does not change the submission requirements.
+
+========================
+PHASE 1 — IMPLEMENT NOW
+========================
+
+Build only the application foundation and Quran learning flow.
+
+Technology:
+React + TypeScript + Vite.
+
+Arabic-first and RTL-first.
+
+Use the attached UNMULAH visual identity.
+
+Required Phase 1 screens/components:
+
+A. App shell / navigation
+
+B. Home page
+- UNMULAH branding
+- short value proposition
+- clear primary CTA to Quran learning
+- do not add unsupported marketing claims
+
+C. Quran learning page
+
+D. Surah Al-Ikhlas page
+- verified Quran text
+- source attribution
+- reading mode
+- Hide Text interaction
+- button to enter visual practice
+
+E. Practice shell
+This is UI only for Phase 1.
+It may show:
+- camera area placeholder
+- future Live Sign Transcript area
+- recognized sequence area
+- retry / confirm / undo controls
+
+BUT:
+Do NOT simulate a working AI.
+Do NOT display fake predictions or confidence.
+Clearly mark the recognition portion as not active until Phase 2.
+
+F. Basic LocalStorage progress foundation
+Only simple non-sensitive state if needed.
+
+G. Responsive mobile + desktop design.
+
+H. Basic accessibility:
+- semantic HTML
+- keyboard usability
+- readable contrast
+- clear focus states
+- Arabic RTL behavior
+
+========================
+BRAND
+========================
+
+Use:
+
+#075B48 Primary emerald
+#033F34 Deep green
+#AEE8BE Mint
+#D9E6D2 Sage
+#F8F5EE Ivory
+#C9A96A Muted gold
+#18211D Charcoal
+
+Style:
+premium Islamic-tech
+minimal
+calm
+visual-first
+rounded
+subtle Islamic arch language
+
+Do not use generic purple AI styling.
+
+========================
+PHASE 1 ACCEPTANCE CRITERIA
+========================
+
+Before stopping:
+
+1. App runs successfully.
+2. No TypeScript/build errors.
+3. Home → Quran → Al-Ikhlas → Hide → Practice navigation works.
+4. Quran text is sourced and documented.
+5. RTL works correctly.
+6. Mobile and desktop layouts are usable.
+7. No fake AI functionality.
+8. No AI model/package is installed yet unless strictly required by the basic app stack.
+9. No secrets are committed.
+10. Summarize all files created/changed.
+11. Tell me how you tested Phase 1.
+12. Show any remaining warnings/issues.
+
+Then STOP.
+
+Do not begin Phase 2 until I explicitly approve it.

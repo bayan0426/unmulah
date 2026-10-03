@@ -1,0 +1,24 @@
+{
+  "name": "unmulah-quran-learning",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Arabic-first Quran learning experience for UNMULAH",
+  "scripts": {
+    "dev": "vite --host 0.0.0.0 --port 5000 --strictPort",
+    "build": "tsc --noEmit && vite build",
+    "typecheck": "tsc --noEmit",
+    "preview": "vite preview --host 0.0.0.0 --port 5000 --strictPort"
+  },
+  "keywords": ["quran", "accessibility", "arabic", "rtl"],
+  "author": "",
+  "dependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.1",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.2"
+  }
+}
