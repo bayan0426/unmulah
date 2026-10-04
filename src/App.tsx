@@ -1,4 +1,5 @@
-import { useEffect, useState, type MouseEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useState, type MouseEvent, type ReactNode } from 'react';
+import { HandTrackingCamera, type AcceptedArabicSign } from './components/HandTrackingCamera';
 import { quranSource } from './data/surahAlIkhlas';
 
 type Route = '/' | '/quran' | '/surah/al-ikhlas' | '/practice/al-ikhlas';
@@ -181,6 +182,21 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
   reviewed: boolean;
   setReviewed: (value: boolean) => void;
 }) {
+  const [recognizedSequence, setRecognizedSequence] = useState<AcceptedArabicSign[]>([]);
+  const [acceptanceResetKey, setAcceptanceResetKey] = useState(0);
+  const [attemptFinished, setAttemptFinished] = useState(false);
+  const onAcceptedLetter = useCallback((prediction: AcceptedArabicSign) => {
+    setRecognizedSequence((sequence) => [...sequence, prediction]);
+  }, []);
+  const retry = () => {
+    setRecognizedSequence([]);
+    setAttemptFinished(false);
+    setAcceptanceResetKey((key) => key + 1);
+  };
+  const undo = () => {
+    setRecognizedSequence((sequence) => sequence.slice(0, -1));
+  };
+
   return (
     <>
       <main className="practice-page">
@@ -188,45 +204,51 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
         <section className="page-heading">
           <div className="eyebrow">مراجعة بصرية · سورة الإخلاص</div>
           <h1>مساحتك للمراجعة</h1>
-          <p>هذه مساحة تحضيرية هادئة. أدوات التعرّف غير مفعّلة في هذه المرحلة.</p>
+          <p>تُثبت الإشارة محليًا بعد اتفاق عدة إطارات متتالية.</p>
         </section>
         <section className="practice-panel" aria-label="مساحة مراجعة سورة الإخلاص">
           <div className="practice-banner">
-            <div><h2>النص مخفي — خذ وقتك</h2><p>لا تُشغّل كاميرا ولا تُرسل بيانات.</p></div>
-            <span className="inactive-tag">التعرّف غير مفعّل</span>
+            <div><h2>النص مخفي — خذ وقتك</h2><p>تعمل معاينة اليد محليًا داخل المتصفح بعد موافقتك.</p></div>
+            <span className="inactive-tag">تتبّع اليد محليًا</span>
           </div>
           <div className="practice-grid">
             <section className="practice-card camera-card">
               <h3>مساحة الكاميرا</h3>
-              <p>لن يُطلب إذن الكاميرا في المرحلة الأولى.</p>
-              <div className="camera-placeholder" aria-disabled="true">
-                <span className="camera-arch" aria-hidden="true"><Icon name="eye" size={30} /></span>
-                <strong>معاينة الكاميرا غير مفعّلة</strong>
-                <span>لا توجد كاميرا أو إشارة قيد التشغيل</span>
-              </div>
+              <p>لن يُطلب إذن الكاميرا إلا عند اختيار تشغيل الكاميرا. لا يتم حفظ أو إرسال أي صور أو فيديو.</p>
+              <HandTrackingCamera
+                onAcceptedLetter={onAcceptedLetter}
+                acceptanceResetKey={acceptanceResetKey}
+                acceptanceEnabled={!attemptFinished}
+              />
             </section>
             <section className="practice-card transcript-card">
               <h3>سجل الإشارة المباشر</h3>
-              <p>سيظهر الحرف بعد تفعيل التعرّف في مرحلة لاحقة.</p>
-              <div className="transcript-placeholder" aria-disabled="true">
-                <strong>فهمت الإشارة: —</strong>
-                <span>لا توجد تنبؤات في المرحلة الأولى</span>
+              <p>تظهر الفئة الخام والثقة الفعلية في تشخيص الكاميرا، بينما تُقبل الإشارة بعد اتفاق نافذة من الإطارات.</p>
+              <div className="transcript-placeholder">
+                <strong>{attemptFinished ? 'تم إنهاء التسميع لهذه الجلسة' : 'جارٍ التحقق من الإشارة…'}</strong>
+                <span>{attemptFinished ? 'تظل النتيجة المعروضة محلية وغير محفوظة.' : 'لن تُقبل نتيجة من إطار واحد، وتُضاف الإشارة الثابتة تلقائيًا.'}</span>
               </div>
             </section>
             <section className="practice-card sequence-card">
               <h3>التسلسل المتعرّف عليه</h3>
-              <p>مواضع إرشادية فقط — لا يوجد إدخال أو تقييم الآن.</p>
-              <div className="sequence-slots" aria-label="أربعة مواضع غير نشطة">
-                {['٠١', '٠٢', '٠٣', '٠٤'].map((slot) => <span className="sequence-slot" key={slot} aria-hidden="true">{slot}</span>)}
+              <p>تُضاف الإشارات الثابتة تلقائيًا داخل هذه الجلسة فقط. لا توجد مقارنة للنص في هذه المرحلة.</p>
+              <div className="sequence-slots" aria-label="التسلسل المتعرّف عليه">
+                {recognizedSequence.length === 0 ? (
+                  <span className="sequence-slot" aria-label="لا توجد إشارات مقبولة">—</span>
+                ) : recognizedSequence.map((item) => (
+                  <span className="sequence-slot" key={`${item.timestamp}-${item.rawLabel}`} title={`${item.rawLabel} · ${(item.confidence * 100).toFixed(1)}%`}>
+                    {item.arabicLabel ?? item.rawLabel}
+                  </span>
+                ))}
               </div>
             </section>
           </div>
-          <div className="future-controls" aria-label="عناصر تحكم مستقبلية غير مفعّلة">
-            <button type="button" disabled aria-disabled="true">إعادة المحاولة · غير مفعّل</button>
-            <button type="button" disabled aria-disabled="true">تأكيد · غير مفعّل</button>
-            <button type="button" disabled aria-disabled="true">تراجع · غير مفعّل</button>
+          <div className="future-controls" aria-label="عناصر تحكم الإشارة الثابتة">
+            <button type="button" onClick={retry} disabled={recognizedSequence.length === 0 && !attemptFinished}>إعادة المحاولة</button>
+            <button type="button" onClick={undo} disabled={recognizedSequence.length === 0}>تراجع</button>
+            <button type="button" onClick={() => setAttemptFinished(true)} disabled={recognizedSequence.length === 0 || attemptFinished}>إنهاء التسميع</button>
           </div>
-          <div className="phase-note">التعرّف على لغة الإشارة ليس مفعّلًا بعد. لا توجد تنبؤات أو درجات ثقة في هذه التجربة.</div>
+          <div className="phase-note">تعمل المعالجة والاستدلال محليًا في المتصفح. تُضاف الإشارة الثابتة تلقائيًا إلى التسلسل، ولا يُعاد قبول الإشارة نفسها حتى تُرفع اليد أو تُثبت إشارة مختلفة. لا توجد مقارنة للقرآن أو حفظ للتسميع في هذه المرحلة.</div>
           <div className="review-toggle">
             <div><strong>هل انتهيت من مراجعتك؟</strong><span>تسجيل يدوي بسيط يُحفظ على هذا الجهاز فقط.</span></div>
             <button type="button" onClick={() => setReviewed(!reviewed)} aria-pressed={reviewed}>{reviewed ? 'إلغاء تسجيل المراجعة' : 'سجّلت مراجعتي'}</button>

@@ -1,0 +1,69 @@
+{
+  "format": "float32-little-endian",
+  "architecture": "63 -> Dense(128, relu) -> Dense(64, relu) -> Dense(43, softmax)",
+  "inputShape": [
+    1,
+    63
+  ],
+  "outputClasses": 43,
+  "weightsFile": "arabic-sign-mlp.f32",
+  "weights": [
+    {
+      "name": "dense1Kernel",
+      "shape": [
+        63,
+        128
+      ],
+      "offsetFloats": 0,
+      "length": 8064
+    },
+    {
+      "name": "dense1Bias",
+      "shape": [
+        128
+      ],
+      "offsetFloats": 8064,
+      "length": 128
+    },
+    {
+      "name": "dense2Kernel",
+      "shape": [
+        128,
+        64
+      ],
+      "offsetFloats": 8192,
+      "length": 8192
+    },
+    {
+      "name": "dense2Bias",
+      "shape": [
+        64
+      ],
+      "offsetFloats": 16384,
+      "length": 64
+    },
+    {
+      "name": "outputKernel",
+      "shape": [
+        64,
+        43
+      ],
+      "offsetFloats": 16448,
+      "length": 2752
+    },
+    {
+      "name": "outputBias",
+      "shape": [
+        43
+      ],
+      "offsetFloats": 19200,
+      "length": 43
+    }
+  ],
+  "source": {
+    "repository": "katyy2000/arabic-sign-language-recognition",
+    "url": "https://huggingface.co/katyy2000/arabic-sign-language-recognition/resolve/main/asl_mediapipe_new_version.keras",
+    "license": "MIT",
+    "kerasSha256": "f263eba58dfd10c4ea7b8720b4e672f2d2acf230857b87dbbb2499291dd58057"
+  }
+}
