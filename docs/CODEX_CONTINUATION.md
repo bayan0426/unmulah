@@ -13,12 +13,13 @@
 - Quran catalogue availability no longer claims Surah-wide recognition support; support remains checked at the selected Ayah level.
 - Finishing a recitation attempt increments the local review-attempt track; it does not alter the recognition or comparison engines.
 - Removed remaining placeholder question-mark strings from the Smart reader, Progress Khatmah tracks, and native Mushaf controls.
+- Profile now has a local-only preference editor and accessibility panel; Library now separates the official Quran offering from source-pending religious material.
 
 ## In progress
-- Rebuild the Progress, Profile, and Library pages as editorial layouts and complete responsive visual QA.
+- Perform mobile visual QA for the rebuilt flagship surfaces and capture only safe layout refinements.
 
 ## Not completed
-- Full Progress/profile/library editorial layouts and mobile visual review.
+- Mobile visual review and minor responsive refinements.
 - Native Mushaf page assets are blocked pending verified reusable page-native assets.
 - Tafsir and sign-Mushaf content remain blocked pending verified source and reuse terms.
 
@@ -30,7 +31,7 @@
 5. src/index.css
 
 ## Next step
-Rebuild the Progress, Profile, and Library pages around their existing local data and source-safety states. Then perform mobile visual QA and capture only safe layout refinements.
+Perform mobile visual QA for Home, Quran, practice, Progress, Profile, and Library. Make only safe responsive fixes, then document source-blocked native Mushaf, Tafsir, and sign-Mushaf work.
 
 ## Known risks
 - Do not alter the classifier, MediaPipe, preprocessing, constrained decoding, stabilization, or Quran comparison engine.

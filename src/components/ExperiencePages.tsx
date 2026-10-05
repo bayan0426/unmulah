@@ -14,7 +14,31 @@ export function ProfilePage() {
   const [accessibility, setAccessibility] = useState<AccessibilitySettings>(readAccessibilitySettings);
   const update = <K extends keyof LocalProfile>(key: K, value: LocalProfile[K]) => setProfile((current) => saveLocalProfile({ ...current, [key]: value }));
   const updateAccessibility = <K extends keyof AccessibilitySettings>(key: K, value: AccessibilitySettings[K]) => setAccessibility((current) => saveAccessibilitySettings({ ...current, [key]: value }));
-  return <main className="info-page" dir="rtl"><section className="page-heading"><p className="eyebrow">محلي وعلى جهازك فقط</p><h1>ملفي</h1><p>لا تحتاج إلى حساب أو اسم أو تاريخ ميلاد. لا تؤثر هذه التفضيلات في نص القرآن أو نتيجة التعرّف.</p></section><section className="access-card profile-form"><label>أسلوب الوصول<select value={profile.accessibility} onChange={(e) => update('accessibility', e.target.value as LocalProfile['accessibility'])}><option value="sign-first">الإشارة أولًا</option><option value="text-first">النص أولًا</option><option value="audio-text">الصوت والنص</option><option value="mixed">مزيج</option></select></label><label>تفضيل السمع<select value={profile.hearing} onChange={(e) => update('hearing', e.target.value as LocalProfile['hearing'])}><option value="deaf-sign">أصم / مستخدم لغة إشارة</option><option value="hard-of-hearing">ضعيف سمع</option><option value="hearing">سامع</option><option value="prefer-not-to-say">أفضل عدم التحديد</option></select></label><label>التجربة<select value={profile.age} onChange={(e) => update('age', e.target.value as LocalProfile['age'])}><option value="child">طفل</option><option value="teen">مراهق</option><option value="adult">بالغ</option></select></label><label>هدفي<select value={profile.goal} onChange={(e) => update('goal', e.target.value as LocalProfile['goal'])}><option value="memorize">الحفظ</option><option value="review">المراجعة</option><option value="learn-quran">تعلم القرآن</option><option value="explore-islam">تعلم الإسلام</option></select></label></section><section className="access-card profile-form"><h2>إعدادات الوصول</h2><label>حجم النص<select value={accessibility.textSize} onChange={(e) => updateAccessibility('textSize', e.target.value as AccessibilitySettings['textSize'])}><option value="standard">قياسي</option><option value="large">كبير</option><option value="x-large">كبير جدًا</option></select></label><label className="profile-check"><input type="checkbox" checked={accessibility.highContrast} onChange={(e) => updateAccessibility('highContrast', e.target.checked)} /> تباين مرتفع</label><label className="profile-check"><input type="checkbox" checked={accessibility.reducedMotion} onChange={(e) => updateAccessibility('reducedMotion', e.target.checked)} /> تقليل الحركة</label><p>تطبّق الإعدادات فورًا على هذا الجهاز، دون حفظ أي بيانات كاميرا.</p></section></main>;
+
+  return <main className="info-page profile-page" dir="rtl">
+    <section className="profile-hero">
+      <p className="eyebrow">على جهازك فقط</p><h1>مساحتك في أُنملة</h1>
+      <p>لا تحتاج إلى حساب أو اسم. هذه الاختيارات تضبط طريقة العرض على هذا الجهاز، ولا تغيّر النص القرآني أو نتيجة التعرّف.</p>
+      <div className="profile-privacy-note"><span aria-hidden="true">⌁</span><span>لا نحفظ صور الكاميرا أو الفيديو أو الصوت.</span></div>
+    </section>
+    <section className="profile-editorial-grid" aria-label="تفضيلات التجربة">
+      <div className="profile-section-title"><p className="eyebrow">كيف تتعلم</p><h2>اختر المسار الأقرب إليك</h2><p>يمكن تغيير أي اختيار لاحقًا.</p></div>
+      <div className="profile-choice-grid">
+        <label><span>أسلوب الوصول</span><select value={profile.accessibility} onChange={(e) => update('accessibility', e.target.value as LocalProfile['accessibility'])}><option value="sign-first">الإشارة أولًا</option><option value="text-first">النص أولًا</option><option value="audio-text">الصوت والنص</option><option value="mixed">مزيج</option></select></label>
+        <label><span>تفضيل السمع</span><select value={profile.hearing} onChange={(e) => update('hearing', e.target.value as LocalProfile['hearing'])}><option value="deaf-sign">أصم / مستخدم لغة إشارة</option><option value="hard-of-hearing">ضعيف سمع</option><option value="hearing">سامع</option><option value="prefer-not-to-say">أفضل عدم التحديد</option></select></label>
+        <label><span>التجربة</span><select value={profile.age} onChange={(e) => update('age', e.target.value as LocalProfile['age'])}><option value="child">طفل</option><option value="teen">مراهق</option><option value="adult">بالغ</option></select></label>
+        <label><span>هدفي الآن</span><select value={profile.goal} onChange={(e) => update('goal', e.target.value as LocalProfile['goal'])}><option value="memorize">الحفظ</option><option value="review">المراجعة</option><option value="learn-quran">تعلم القرآن</option><option value="explore-islam">تعلم الإسلام</option></select></label>
+      </div>
+    </section>
+    <section className="profile-accessibility-panel">
+      <div><p className="eyebrow">وضوح وراحة</p><h2>إعدادات الوصول</h2><p>تطبّق مباشرة على هذا الجهاز.</p></div>
+      <div className="profile-a11y-controls">
+        <label><span>حجم النص</span><select value={accessibility.textSize} onChange={(e) => updateAccessibility('textSize', e.target.value as AccessibilitySettings['textSize'])}><option value="standard">قياسي</option><option value="large">كبير</option><option value="x-large">كبير جدًا</option></select></label>
+        <label className="profile-toggle"><input type="checkbox" checked={accessibility.highContrast} onChange={(e) => updateAccessibility('highContrast', e.target.checked)} /><span>تباين مرتفع</span></label>
+        <label className="profile-toggle"><input type="checkbox" checked={accessibility.reducedMotion} onChange={(e) => updateAccessibility('reducedMotion', e.target.checked)} /><span>تقليل الحركة</span></label>
+      </div>
+    </section>
+  </main>;
 }
 
 export function ProgressPage({ attempts, reviewed }: { attempts: LocalAttempt[]; reviewed: boolean }) {

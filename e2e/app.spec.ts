@@ -66,7 +66,7 @@ test('smart Quran ayah actions are contextual and do not claim unavailable conte
 
 test('local profile, accessibility settings, and saved references are usable', async ({ page }) => {
   await page.goto('/profile');
-  await expect(page.getByRole('heading', { name: 'ملفي' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'مساحتك في أُنملة' })).toBeVisible();
   await page.getByRole('combobox', { name: 'حجم النص' }).selectOption('large');
   await page.getByLabel('تباين مرتفع').check();
   await page.goto('/quran?view=smart');
