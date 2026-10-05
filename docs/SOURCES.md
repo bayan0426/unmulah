@@ -87,6 +87,9 @@ from both official KFGQPC viewing modes.
   `f263eba58dfd10c4ea7b8720b4e672f2d2acf230857b87dbbb2499291dd58057`.
 - Encoder artifact SHA-256 used to verify the 43-class order:
   `88ee7638cfb47bcf7ca2e4d7fde226fac66789662ee7884dca1d2018c2cc08af`.
+- The strict verified/unresolved mapping boundary is recorded in
+  [`ARABIC_SIGN_MAPPING_AUDIT.md`](ARABIC_SIGN_MAPPING_AUDIT.md). It avoids
+  treating raw English label names as proof of Arabic-letter identity.
 
 Camera frames, landmark processing, model inference, and deterministic
 comparison remain in the browser. The current MVP does not upload or record
