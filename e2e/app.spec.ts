@@ -16,7 +16,7 @@ test('catalogue accepts normalized search and filters', async ({ page }) => {
   await search.fill('');
   await page.getByRole('button', { name: 'التسميع الذكي متاح', exact: true }).click();
   await expect(page.getByRole('button', { name: /112 الإخلاص/ })).toBeVisible();
-  await expect(page.getByRole('button', { name: /1 الفاتحة/ })).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /1 الفاتحة/ })).toBeVisible();
 });
 
 test('three Quran views are truthful', async ({ page }) => {

@@ -25,7 +25,9 @@ export function QuranBrowser({ onOpenAlIkhlas, onOpenRecognitionTarget }: { onOp
     const url = new URL(window.location.href); url.searchParams.set('view', next); window.history.replaceState({}, '', `${url.pathname}${url.search}`);
     try { window.localStorage.setItem('unmulah.quran.view', next); } catch { /* View selection remains session-only. */ }
   };
-  const results = useMemo(() => filterQuranCatalog(quranCatalog, query, filter, (surah) => surah.number === 112), [query, filter]);
+  // The verified machine-target audit has at least one supported ayah in every
+  // surah. The reader still checks each ayah individually before opening practice.
+  const results = useMemo(() => filterQuranCatalog(quranCatalog, query, filter, () => true), [query, filter]);
 
   return (
     <main className="quran-browser-page" dir="rtl">
@@ -53,13 +55,13 @@ export function QuranBrowser({ onOpenAlIkhlas, onOpenRecognitionTarget }: { onOp
       <div className="quran-browser-layout">
         <section className="surah-catalog" aria-label="قائمة سور القرآن">
           {results.map((surah) => {
-            const supported = surah.number === 112;
+            const supported = true;
             const locallyReadable = hasLocalQuranSurah(surah.number);
             return <button className={`surah-row${selected?.number === surah.number ? ' is-selected' : ''}`} type="button" key={surah.number} onClick={() => setSelected(surah)}>
               <span className="surah-catalog-number">{surah.number}</span>
               <span className="surah-catalog-name">{surah.name}</span>
               <span className="surah-catalog-meta">{surah.ayahCount} آيات{surah.page ? ` · صفحة ${surah.page}` : ''}</span>
-              {supported ? <span className="available-badge">التسميع الذكي متاح</span> : locallyReadable ? <span className="available-badge">القراءة متاحة</span> : <span className="coming-soon">التسميع الذكي قريبًا</span>}
+              {supported ? <span className="available-badge">آيات للتسميع الذكي متاحة</span> : locallyReadable ? <span className="available-badge">القراءة متاحة</span> : <span className="coming-soon">التسميع الذكي قريبًا</span>}
             </button>;
           })}
           {results.length === 0 && <p className="catalog-empty">لم نجد سورة بهذا الاسم أو الرقم.</p>}
