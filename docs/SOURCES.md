@@ -127,12 +127,16 @@ present in the app. See the official [developer platform](https://qurancomplex.g
 ## Quran audio
 
 The smart reader uses the official public [MP3Quran developer API](https://www.mp3quran.net/ar/api)
-at runtime; no audio is bundled or preloaded. The selected read is **Ahmed bin
-Ali Al-Ajmi**, Hafs `read=5`, whose official API record reports all 114 surahs
-and per-ayah timing. Audio and timing requests are made only after an explicit
-play action. The API's timing data is used as supplied for seeking, repeat, and
-the active-ayeh indicator; no boundary is estimated. Reuse terms for downloaded
-or redistributed audio remain unverified, so no media asset is copied into this
+at runtime; no audio is bundled or preloaded. It queries the official timing-read
+list for Hafs reads with 114 surahs over HTTPS, then exposes only those verified
+records. Ahmed bin Ali Al-Ajmi, Hafs `read=5`, is the default because the API
+reports all 114 surahs and per-ayah timing. Faisal Al-Hajri and Abdulbadi
+Ghaylan are separately included only as official full-Hafs audio records without
+ayah timing; their UI truthfully limits controls to full-surah playback.
+Audio and timing requests are made only after an explicit play action. The API's
+timing data is used as supplied for seeking, repeat, range repeat, and the
+active-ayah indicator; no boundary is estimated. Reuse terms for downloaded or
+redistributed audio remain unverified, so no media asset is copied into this
 repository.
 
 ## Religious reference note

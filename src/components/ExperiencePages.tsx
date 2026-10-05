@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { LocalAttempt } from '../lib/attemptHistory';
-import { deriveExperienceProgress, readLocalProfile, saveLocalProfile, type LocalProfile } from '../lib/localExperience';
+import { clearLocalActivities, deriveExperienceProgress, readLocalActivities, readLocalProfile, saveLocalProfile, type LocalProfile } from '../lib/localExperience';
 import { clearAccessibilitySettings, readAccessibilitySettings, saveAccessibilitySettings, type AccessibilitySettings } from '../lib/accessibilitySettings';
 import { clearSavedContent, readSavedContent, removeSavedContent, type SavedQuranAyah } from '../lib/savedContent';
 import { clearLocalProfile } from '../lib/localExperience';
@@ -17,7 +17,7 @@ export function ProfilePage() {
 }
 
 export function ProgressPage({ attempts, reviewed }: { attempts: LocalAttempt[]; reviewed: boolean }) {
-  const activities = [...attempts.map((attempt) => ({ kind: 'attempt' as const, occurredAt: attempt.completedAt })), ...(reviewed ? [{ kind: 'review' as const, occurredAt: new Date().toISOString() }] : [])];
+  const activities = [...readLocalActivities(), ...attempts.map((attempt) => ({ kind: 'attempt' as const, occurredAt: attempt.completedAt })), ...(reviewed ? [{ kind: 'review' as const, occurredAt: new Date().toISOString() }] : [])];
   const progress = deriveExperienceProgress(activities, attempts.map((attempt) => attempt.accuracy));
   return <main className="info-page" dir="rtl"><section className="page-heading"><p className="eyebrow">تقدم محلي</p><h1>تقدمي</h1><p>النقاط والحديقة تعكسان نشاطك المسجل، ولا تمثل ثوابًا أو حكمًا على الحفظ.</p></section><section className="progress-dashboard"><article><span>نقاط التقدم</span><strong>{progress.points}</strong></article><article><span>سلسلة الاستمرار</span><strong>{progress.streak} أيام</strong></article><article><span>حديقة أُنملة</span><strong>{({ seed: 'بذرة', sprout: 'برعم', leaves: 'أوراق', flower: 'زهرة' }[progress.garden])}</strong></article><article><span>أفضل محاولة</span><strong>{progress.bestAccuracy === null ? '—' : `${(progress.bestAccuracy * 100).toFixed(1)}%`}</strong></article></section><section className="access-card"><h2>إنجازاتك</h2><p>{progress.achievements.length ? progress.achievements.map((item) => labels[item as keyof typeof labels]).join(' · ') : 'أكمل نشاطًا ذا معنى لبدء تقدمك.'}</p><h2>تحدي اليوم</h2><p>{({ attempt: 'أكمل محاولة تسميع', review: 'سجّل مراجعة آية', 'surah-read': 'اقرأ سورة', 'saved-item': 'احفظ موردًا للعودة إليه' }[progress.challenge])}</p></section></main>;
 }
@@ -29,14 +29,15 @@ export function SavedContentPage({ onOpenQuran }: { onOpenQuran: () => void }) {
 
 export function DataManagementPage() {
   const [message, setMessage] = useState('');
-  const clear = (kind: 'attempts' | 'saved' | 'profile' | 'accessibility' | 'all') => {
-    const labels = { attempts: 'سجل المحاولات', saved: 'المحفوظات', profile: 'الملف المحلي', accessibility: 'إعدادات الوصول', all: 'كل البيانات المحلية' };
+  const clear = (kind: 'attempts' | 'saved' | 'profile' | 'accessibility' | 'progress' | 'all') => {
+    const labels = { attempts: 'سجل المحاولات', saved: 'المحفوظات', profile: 'الملف المحلي', accessibility: 'إعدادات الوصول', progress: 'نشاط التقدم والحديقة', all: 'كل البيانات المحلية' };
     if (!window.confirm(`هل تريد مسح ${labels[kind]} من هذا الجهاز؟`)) return;
     if (kind === 'attempts' || kind === 'all') clearAttemptHistory();
     if (kind === 'saved' || kind === 'all') clearSavedContent();
     if (kind === 'profile' || kind === 'all') clearLocalProfile();
     if (kind === 'accessibility' || kind === 'all') clearAccessibilitySettings();
+    if (kind === 'progress' || kind === 'all') clearLocalActivities();
     setMessage(`تم مسح ${labels[kind]} محليًا.`);
   };
-  return <main className="info-page" dir="rtl"><section className="page-heading"><p className="eyebrow">على جهازك فقط</p><h1>إدارة بياناتي</h1><p>لا نخزن لقطات الكاميرا أو الفيديو أو الصوت. تتحكم هنا فقط في البيانات المحلية التي أنشأتها داخل أُنملة.</p></section><section className="access-card data-management"><button type="button" onClick={() => clear('attempts')}>مسح سجل المحاولات</button><button type="button" onClick={() => clear('saved')}>مسح المحفوظات</button><button type="button" onClick={() => clear('profile')}>مسح الملف المحلي</button><button type="button" onClick={() => clear('accessibility')}>إعادة إعدادات الوصول</button><button type="button" className="danger-action" onClick={() => clear('all')}>مسح كل البيانات المحلية</button>{message && <p role="status">{message}</p>}</section></main>;
+  return <main className="info-page" dir="rtl"><section className="page-heading"><p className="eyebrow">على جهازك فقط</p><h1>إدارة بياناتي</h1><p>لا نخزن لقطات الكاميرا أو الفيديو أو الصوت. تتحكم هنا فقط في البيانات المحلية التي أنشأتها داخل أُنملة.</p></section><section className="access-card data-management"><button type="button" onClick={() => clear('attempts')}>مسح سجل المحاولات</button><button type="button" onClick={() => clear('saved')}>مسح المحفوظات</button><button type="button" onClick={() => clear('progress')}>مسح تقدم الحديقة</button><button type="button" onClick={() => clear('profile')}>مسح الملف المحلي</button><button type="button" onClick={() => clear('accessibility')}>إعادة إعدادات الوصول</button><button type="button" className="danger-action" onClick={() => clear('all')}>مسح كل البيانات المحلية</button>{message && <p role="status">{message}</p>}</section></main>;
 }

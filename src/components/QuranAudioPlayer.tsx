@@ -20,6 +20,7 @@ export function QuranAudioPlayer({ surahNumber, ayahCount, selectedAyah, onSelec
   const [duration, setDuration] = useState(0);
   const [reciters, setReciters] = useState<Mp3QuranReciter[]>([MP3_QURAN_TIMING_READ]);
   const [reciter, setReciter] = useState<Mp3QuranReciter>(MP3_QURAN_TIMING_READ);
+  const [reciterQuery, setReciterQuery] = useState('');
   const [rangeStart, setRangeStart] = useState(1);
   const [rangeEnd, setRangeEnd] = useState(ayahCount);
   const [rangeRepeatActive, setRangeRepeatActive] = useState(false);
@@ -109,9 +110,10 @@ export function QuranAudioPlayer({ surahNumber, ayahCount, selectedAyah, onSelec
   const next = () => seekToAyah(Math.min(ayahCount, (selectedAyah ?? 0) + 1));
 
   const switchReciter = (id: number) => { const next = reciters.find((item) => item.id === id); if (!next) return; audioRef.current?.pause(); setRangeRepeatActive(false); setReciter(next); saveSelectedReciter(next); setStatus('loading'); };
+  const visibleReciters = reciters.filter((item) => item.name.includes(reciterQuery.trim()));
   return <section className="quran-audio-player" aria-label="التلاوة الصوتية">
     <audio ref={audioRef} src={getMp3QuranSurahUrl(surahNumber, reciter)} preload="metadata" onTimeUpdate={handleTimeUpdate} onLoadedMetadata={(event) => setDuration(event.currentTarget.duration)} onPause={() => setStatus((current) => current === 'error' ? current : 'paused')} onEnded={() => { setStatus('idle'); onActiveAyah(null); }} />
-    <div><p className="eyebrow">التلاوة الصوتية</p><label>اختر القارئ<select value={reciter.id} onChange={(event) => switchReciter(Number(event.target.value))}>{reciters.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><strong>{reciter.name}</strong><span>{reciter.rewaya} · مصدر MP3Quran الرسمي</span></div>
+    <div><p className="eyebrow">التلاوة الصوتية</p>{reciters.length > 8 && <label className="reciter-search">ابحث عن قارئ<input value={reciterQuery} onChange={(event) => setReciterQuery(event.target.value)} placeholder="اسم القارئ" /></label>}<label>اختر القارئ<select value={reciter.id} onChange={(event) => switchReciter(Number(event.target.value))}>{visibleReciters.some((item) => item.id === reciter.id) || <option value={reciter.id}>{reciter.name}</option>}{visibleReciters.map((item) => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label><strong>{reciter.name}</strong><span>{reciter.rewaya} · مصدر MP3Quran الرسمي</span></div>
     <div className="audio-controls">
       <button type="button" onClick={previous} disabled={!reciter.supportsAyahTiming} aria-label="الآية السابقة">السابق</button>
       {status === 'playing' ? <button type="button" onClick={() => audioRef.current?.pause()}>إيقاف مؤقت</button> : <button type="button" onClick={play}>استمع للسورة</button>}

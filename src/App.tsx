@@ -6,7 +6,7 @@ import { SignAccessPage, SourcesPrivacyPage } from './components/InfoPages';
 import { DataManagementPage, ProfilePage, ProgressPage, SavedContentPage } from './components/ExperiencePages';
 import type { KfgqpcRecognitionTarget } from './lib/quranCoverageAudit';
 import { readAccessibilitySettings } from './lib/accessibilitySettings';
-import { readLocalProfile } from './lib/localExperience';
+import { readLocalProfile, recordLocalActivity } from './lib/localExperience';
 import { quranSource } from './data/surahAlIkhlas';
 import { clearAttemptHistory, readAttemptHistory, removeAttempt, saveAttempt, type LocalAttempt } from './lib/attemptHistory';
 import {
@@ -235,6 +235,7 @@ function PracticePage({ navigate, reviewed, setReviewed, dynamicTarget, dynamicL
     const result = dynamicTarget ? compareRecognizedSequence(recognizedSequence, selectedTarget) : compareAlIkhlasRecitation(recognizedSequence, targetId);
     setComparisonResult(result);
     setAttemptHistory(saveAttempt(result));
+    recordLocalActivity('attempt');
     setAttemptFinished(true);
   };
   const selectTarget = (nextTargetId: RecitationTargetId) => {
@@ -377,6 +378,7 @@ function App() {
   const accessibilitySettings = readAccessibilitySettings();
   const updateReviewed = (value: boolean) => {
     setReviewed(value);
+    if (value) recordLocalActivity('review');
     try {
       window.localStorage.setItem(REVIEW_KEY, String(value));
     } catch {

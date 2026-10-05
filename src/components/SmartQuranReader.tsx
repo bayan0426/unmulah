@@ -10,6 +10,7 @@ import { QuranAudioPlayer } from './QuranAudioPlayer';
 import { readQuranReaderSettings, saveQuranReaderSettings, type QuranReaderSettings } from '../lib/quranReaderSettings';
 import { createRecognitionTargetFromKfgqpc, type KfgqpcRecognitionTarget } from '../lib/quranCoverageAudit';
 import { readSavedContent, removeSavedContent, saveQuranAyah, type SavedQuranAyah } from '../lib/savedContent';
+import { recordLocalActivity } from '../lib/localExperience';
 
 type SmartQuranReaderProps = {
   initialSurah?: number;
@@ -37,6 +38,10 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas, onOpenRecog
       setError(reason instanceof Error ? reason.message : 'تعذر تحميل النص الذكي.');
     });
   }, []);
+
+  useEffect(() => {
+    if (records) recordLocalActivity('surah-read');
+  }, [records, surahNumber]);
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -69,7 +74,7 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas, onOpenRecog
     const id = `quran:${record.sura_no}:${record.aya_no}`;
     setSavedContent((current) => current.some((item) => item.id === id)
       ? removeSavedContent(id)
-      : saveQuranAyah({ surahNumber: record.sura_no, surahName: record.sura_name_ar, ayahNumber: record.aya_no, page: record.page, juz: record.jozz }));
+      : (recordLocalActivity('saved-item'), saveQuranAyah({ surahNumber: record.sura_no, surahName: record.sura_name_ar, ayahNumber: record.aya_no, page: record.page, juz: record.jozz })));
   };
 
   if (error) {

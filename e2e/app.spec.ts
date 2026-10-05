@@ -47,9 +47,15 @@ test('smart Quran ayah actions are contextual and do not claim unavailable conte
   await page.goto('/quran?view=smart');
   await expect(page.getByRole('region', { name: 'التلاوة الصوتية' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'استمع للسورة' })).toBeVisible();
+  await page.getByRole('combobox', { name: 'اختر سورة' }).selectOption('112');
   await page.locator('.smart-ayah-card').first().click();
   await expect(page.getByRole('dialog', { name: /خيارات الآية 1/ })).toBeVisible();
   await expect(page.getByRole('button', { name: 'حفظ الآية' })).toBeVisible();
+  await page.getByRole('dialog', { name: /خيارات الآية 1/ }).getByRole('button', { name: 'ابدأ التسميع' }).click();
+  await expect(page).toHaveURL(/\/practice\/ayah$/);
+  await expect(page.getByText(/هدف التسميع:/)).toBeVisible();
+  await page.goto('/quran?view=smart');
+  await page.locator('.smart-ayah-card').first().click();
   await page.getByRole('button', { name: 'إغلاق خيارات الآية' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });

@@ -635,6 +635,9 @@ button:focus-visible, a:focus-visible {
 .quran-audio-player { margin-top:16px;padding:16px;border:1px solid rgba(3,63,52,.16);border-radius:14px;background:rgba(217,230,210,.25);display:grid;gap:10px; }
 .quran-audio-player strong,.quran-audio-player span { display:block;color:var(--deep);font-family:var(--font-arabic); }
 .quran-audio-player span { color:rgba(24,33,29,.65);font-size:12px;margin-top:2px; }
+.quran-audio-player label { display:grid;gap:4px;color:var(--deep);font:600 13px var(--font-arabic); }
+.quran-audio-player label select,.quran-audio-player label input { min-height:38px;padding:0 8px;border:1px solid rgba(3,63,52,.2);border-radius:8px;background:var(--paper);color:var(--deep);font-family:var(--font-arabic); }
+.reciter-search { margin-bottom:8px; }
 .audio-controls,.audio-options { display:flex;flex-wrap:wrap;align-items:center;gap:8px; }
 .audio-controls button,.audio-options select { min-height:36px;padding:0 11px;border:1px solid rgba(3,63,52,.2);border-radius:9px;background:var(--paper);color:var(--deep);font:13px var(--font-arabic);cursor:pointer; }
 .audio-options label { display:flex;align-items:center;gap:6px;color:rgba(24,33,29,.7);font:12px var(--font-arabic); }

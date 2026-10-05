@@ -9,6 +9,7 @@ export type LocalActivity = { kind: ActivityKind; occurredAt: string };
 export type ExperienceProgress = { points: number; streak: number; garden: 'seed' | 'sprout' | 'leaves' | 'flower'; achievements: string[]; latestAttemptAt: string | null; bestAccuracy: number | null; challenge: ActivityKind };
 
 const PROFILE_KEY = 'unmulah.profile.v1';
+const ACTIVITY_KEY = 'unmulah.activities.v1';
 const DEFAULT_PROFILE: LocalProfile = { accessibility: 'mixed', hearing: 'prefer-not-to-say', age: 'adult', goal: 'learn-quran' };
 
 export function readLocalProfile(storage: Storage = window.localStorage): LocalProfile {
@@ -22,6 +23,24 @@ export function saveLocalProfile(profile: LocalProfile, storage: Storage = windo
 }
 
 export function clearLocalProfile(storage: Storage = window.localStorage) { try { storage.removeItem(PROFILE_KEY); } catch { /* no-op */ } }
+
+export function readLocalActivities(storage: Storage = window.localStorage): LocalActivity[] {
+  try {
+    const parsed: unknown = JSON.parse(storage.getItem(ACTIVITY_KEY) ?? '[]');
+    return Array.isArray(parsed) ? parsed.filter(isLocalActivity).slice(0, 200) : [];
+  } catch { return []; }
+}
+
+export function recordLocalActivity(kind: ActivityKind, storage: Storage = window.localStorage, occurredAt = new Date().toISOString()): LocalActivity[] {
+  const current = readLocalActivities(storage);
+  const day = dayKey(occurredAt);
+  if (current.some((activity) => activity.kind === kind && dayKey(activity.occurredAt) === day)) return current;
+  const next = [{ kind, occurredAt }, ...current].slice(0, 200);
+  try { storage.setItem(ACTIVITY_KEY, JSON.stringify(next)); } catch { /* Current action remains valid. */ }
+  return next;
+}
+
+export function clearLocalActivities(storage: Storage = window.localStorage) { try { storage.removeItem(ACTIVITY_KEY); } catch { /* no-op */ } }
 
 export function deriveExperienceProgress(activities: readonly LocalActivity[], attemptAccuracies: readonly number[] = []): ExperienceProgress {
   const sortedDays = [...new Set(activities.map((activity) => dayKey(activity.occurredAt)).filter(Boolean))].sort().reverse();
@@ -45,6 +64,7 @@ function validateProfile(value: unknown): LocalProfile | null {
   if (!valid('accessibility', ['sign-first', 'text-first', 'audio-text', 'mixed']) || !valid('hearing', ['deaf-sign', 'hard-of-hearing', 'hearing', 'prefer-not-to-say']) || !valid('age', ['child', 'teen', 'adult']) || !valid('goal', ['memorize', 'review', 'learn-quran', 'explore-islam'])) return null;
   return candidate as unknown as LocalProfile;
 }
+function isLocalActivity(value: unknown): value is LocalActivity { if (!value || typeof value !== 'object') return false; const item = value as Record<string, unknown>; return ['attempt', 'review', 'surah-read', 'saved-item'].includes(String(item.kind)) && typeof item.occurredAt === 'string' && !!dayKey(item.occurredAt as string); }
 function dayKey(value: string): string { const date = new Date(value); return Number.isNaN(date.valueOf()) ? '' : date.toISOString().slice(0, 10); }
 function previousDay(day: string): string { const date = new Date(`${day}T00:00:00.000Z`); date.setUTCDate(date.getUTCDate() - 1); return date.toISOString().slice(0, 10); }
 function deterministicChallenge(day: string): ActivityKind { const choices: ActivityKind[] = ['attempt', 'review', 'surah-read', 'saved-item']; return choices[[...day].reduce((sum, character) => sum + character.charCodeAt(0), 0) % choices.length]; }
