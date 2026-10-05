@@ -3,6 +3,7 @@ import {
   AL_IKHLAS_EXPECTED_RAW_LABELS,
   RECITATION_TARGETS,
   compareAlIkhlasRecitation,
+  compareRecognizedSequence,
 } from './recitationComparison';
 
 const fromRawLabels = (rawLabels: string[]) => rawLabels.map((rawLabel) => ({ rawLabel, arabicLabel: null }));
@@ -62,5 +63,10 @@ describe('Al-Ikhlas deterministic recitation alignment', () => {
     expect(result.extra).toBe(0);
     expect(result.substitutions).toBe(0);
     expect(result.accuracy).toBe(0);
+  });
+
+  it('aligns a verified dynamic ayah target without changing the fixed Al-Ikhlas references', () => {
+    const result = compareRecognizedSequence(fromRawLabels(['gaaf', 'laam', 'ha']), { id: 'kfgqpc:1:1', label: 'اختبار', normalized: 'قله' });
+    expect(result).toMatchObject({ targetId: 'kfgqpc:1:1', correct: 3, accuracy: 1, expectedRawLabels: ['gaaf', 'laam', 'ha'] });
   });
 });

@@ -20,7 +20,7 @@ export type UnresolvedRecognition = {
 };
 
 export type RecitationComparison = {
-  targetId: RecitationTargetId;
+  targetId: string;
   targetLabel: string;
   expectedNormalized: string;
   expectedRawLabels: ArabicSignModelLabel[];
@@ -40,8 +40,8 @@ const ALEF_NORMALIZATION = /[\u0671\u0623\u0625\u0622]/g;
 const ARABIC_LETTERS_ONLY = /[^\u0621-\u064A]/g;
 export type RecitationTargetId = 'ayah-1' | 'ayah-2' | 'ayah-3' | 'ayah-4' | 'full-surah';
 
-type TargetDefinition = {
-  id: RecitationTargetId;
+export type RecitationTargetDefinition = {
+  id: string;
   label: string;
   verseIndexes: number[];
   expectedNormalized: string;
@@ -64,7 +64,7 @@ export function normalizeForAlIkhlasComparison(text: string): string {
     .replace(ARABIC_LETTERS_ONLY, '');
 }
 
-const TARGET_DEFINITIONS: TargetDefinition[] = [
+const TARGET_DEFINITIONS: RecitationTargetDefinition[] = [
   { id: 'ayah-1', label: 'الآية ١', verseIndexes: [0], expectedNormalized: 'قلهواللهاحد', expectedLength: 11 },
   { id: 'ayah-2', label: 'الآية ٢', verseIndexes: [1], expectedNormalized: 'اللهالصمد', expectedLength: 9 },
   { id: 'ayah-3', label: 'الآية ٣', verseIndexes: [2], expectedNormalized: 'لميلدولميولد', expectedLength: 12 },
@@ -110,6 +110,18 @@ export function allowedRawLabelsForTarget(targetId: RecitationTargetId): ArabicS
   return [...new Set(expectedRawLabelsForTarget(targetId))];
 }
 
+export function allowedRawLabelsForNormalizedReference(normalized: string): ArabicSignModelLabel[] {
+  return [...new Set(expectedRawLabelsForNormalizedReference(normalized))];
+}
+
+export function expectedRawLabelsForNormalizedReference(normalized: string): ArabicSignModelLabel[] {
+  return Array.from(normalized, (character) => {
+    const rawLabel = ARABIC_CHARACTER_TO_RAW_LABEL.get(character);
+    if (!rawLabel) throw new Error(`No verified Arabic-sign label exists for ${character}.`);
+    return rawLabel;
+  });
+}
+
 type AlignmentToken = {
   value: string;
   display: string | null;
@@ -119,7 +131,13 @@ export function compareAlIkhlasRecitation(
   recognized: RecognizedComparisonItem[],
   targetId: RecitationTargetId = 'full-surah',
 ): RecitationComparison {
-  const target = getRecitationTarget(targetId);
+  return compareRecognizedSequence(recognized, getRecitationTarget(targetId));
+}
+
+export function compareRecognizedSequence(
+  recognized: RecognizedComparisonItem[],
+  target: { id: string; label: string; normalized: string },
+): RecitationComparison {
   const unresolved: UnresolvedRecognition[] = [];
   const recognizedTokens: AlignmentToken[] = recognized.map((item, index) => {
     const character = verifiedArabicCharacter(item.rawLabel);
@@ -182,10 +200,10 @@ export function compareAlIkhlasRecitation(
   const alignmentColumns = correct + missing + extra + substitutions;
 
   return {
-    targetId,
+    targetId: target.id,
     targetLabel: target.label,
     expectedNormalized: target.normalized,
-    expectedRawLabels: expectedRawLabelsForTarget(targetId),
+    expectedRawLabels: expectedRawLabelsForNormalizedReference(target.normalized),
     recognizedDebugSequence: recognized.map((item) => verifiedArabicCharacter(item.rawLabel) ?? `[${item.rawLabel}]`).join(''),
     operations,
     unresolved,

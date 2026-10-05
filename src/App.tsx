@@ -3,18 +3,23 @@ import { HandTrackingCamera, type AcceptedArabicSign } from './components/HandTr
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { QuranBrowser } from './components/QuranBrowser';
 import { SignAccessPage, SourcesPrivacyPage } from './components/InfoPages';
+import { DataManagementPage, ProfilePage, ProgressPage, SavedContentPage } from './components/ExperiencePages';
+import type { KfgqpcRecognitionTarget } from './lib/quranCoverageAudit';
+import { readAccessibilitySettings } from './lib/accessibilitySettings';
+import { readLocalProfile } from './lib/localExperience';
 import { quranSource } from './data/surahAlIkhlas';
 import { clearAttemptHistory, readAttemptHistory, removeAttempt, saveAttempt, type LocalAttempt } from './lib/attemptHistory';
 import {
   RECITATION_TARGETS,
   allowedRawLabelsForTarget,
   compareAlIkhlasRecitation,
+  compareRecognizedSequence,
   getRecitationTarget,
   type RecitationComparison,
   type RecitationTargetId,
 } from './lib/recitationComparison';
 
-type Route = '/' | '/quran' | '/surah/al-ikhlas' | '/practice/al-ikhlas' | '/accessibility' | '/sources';
+type Route = '/' | '/quran' | '/surah/al-ikhlas' | '/practice/al-ikhlas' | '/practice/ayah' | '/accessibility' | '/sources' | '/profile' | '/progress' | '/saved' | '/data';
 const REVIEW_KEY = 'unmulah.reviewed.al-ikhlas';
 
 function readReviewed(): boolean {
@@ -62,6 +67,10 @@ function Header({ navigate, route }: { navigate: (path: Route) => void; route: R
         <AppLink href="/quran" navigate={navigate} current={route === '/quran' || route === '/surah/al-ikhlas'}>القرآن</AppLink>
         <AppLink href="/surah/al-ikhlas" navigate={navigate} current={route === '/practice/al-ikhlas'}>التسميع</AppLink>
         <AppLink href="/accessibility" navigate={navigate} current={route === '/accessibility'}>الوصول بالإشارة</AppLink>
+        <AppLink href="/progress" navigate={navigate} current={route === '/progress'}>تقدمي</AppLink>
+        <AppLink href="/saved" navigate={navigate} current={route === '/saved'}>المحفوظات</AppLink>
+        <AppLink href="/profile" navigate={navigate} current={route === '/profile'}>ملفي</AppLink>
+        <AppLink href="/data" navigate={navigate} current={route === '/data'}>بياناتي</AppLink>
         <AppLink href="/sources" navigate={navigate} current={route === '/sources'}>المصادر</AppLink>
       </nav>
       <div className="header-quiet"><span className="status-dot" />تعلّم ومراجعة على مهل</div>
@@ -78,6 +87,14 @@ function Footer() {
 }
 
 function Home({ navigate, reviewed }: { navigate: (path: Route) => void; reviewed: boolean }) {
+  const profile = readLocalProfile();
+  const homeMessage = profile.accessibility === 'sign-first' || profile.hearing === 'deaf-sign'
+    ? 'ابدأ من القراءة المرئية ثم انتقل إلى مساحة التسميع بالإشارة عندما تكون الآية مدعومة.'
+    : profile.goal === 'memorize'
+      ? 'اقرأ الآية، واستمع إلى تلاوتها، ثم راجعها على مهل.'
+      : profile.age === 'child'
+        ? 'ابدأ بخطوات قصيرة وواضحة، ثم احتفل بتقدمك في حديقة أُنملة.'
+        : 'اقرأ النص المعتمد، واستمع إلى التلاوة، ثم راجع بطريقتك.';
   return (
     <>
       <main>
@@ -85,7 +102,7 @@ function Home({ navigate, reviewed }: { navigate: (path: Route) => void; reviewe
           <div className="hero-copy">
             <div className="eyebrow">تعلّم القرآن على مهل</div>
             <h1 id="home-title" className="hero-title">تعلّم القرآن<br /><span>خطوةً بخطوة</span></h1>
-            <p className="hero-description">ابدأ بسورة الإخلاص. اقرأ النص المعتمد، أخفِه، ثم انتقل إلى مساحة مراجعة تحضيرية.</p>
+            <p className="hero-description">{homeMessage}</p>
             <div className="hero-actions">
               <AppLink href="/quran" navigate={navigate} className="button button-primary">ابدأ التعلّم <Icon name="arrow" /></AppLink>
               <AppLink href="/surah/al-ikhlas" navigate={navigate} className="button button-secondary"><Icon name="book" />سورة الإخلاص</AppLink>
@@ -123,8 +140,8 @@ function Home({ navigate, reviewed }: { navigate: (path: Route) => void; reviewe
   );
 }
 
-function QuranPage({ navigate }: { navigate: (path: Route) => void }) {
-  return <><QuranBrowser onOpenAlIkhlas={() => navigate('/surah/al-ikhlas')} /><Footer /></>;
+function QuranPage({ navigate, onOpenRecognitionTarget }: { navigate: (path: Route) => void; onOpenRecognitionTarget: (target: KfgqpcRecognitionTarget, label: string) => void }) {
+  return <><QuranBrowser onOpenAlIkhlas={() => navigate('/surah/al-ikhlas')} onOpenRecognitionTarget={onOpenRecognitionTarget} /><Footer /></>;
 }
 
 function SurahPage({ navigate, reviewed, textHidden, setTextHidden }: {
@@ -180,10 +197,12 @@ function SurahPage({ navigate, reviewed, textHidden, setTextHidden }: {
   );
 }
 
-function PracticePage({ navigate, reviewed, setReviewed }: {
+function PracticePage({ navigate, reviewed, setReviewed, dynamicTarget, dynamicLabel }: {
   navigate: (path: Route) => void;
   reviewed: boolean;
   setReviewed: (value: boolean) => void;
+  dynamicTarget?: KfgqpcRecognitionTarget | null;
+  dynamicLabel?: string | null;
 }) {
   const [recognizedSequence, setRecognizedSequence] = useState<AcceptedArabicSign[]>([]);
   const [acceptanceResetKey, setAcceptanceResetKey] = useState(0);
@@ -194,8 +213,8 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
   const [showPracticeIntro, setShowPracticeIntro] = useState(() => {
     try { return window.localStorage.getItem('unmulah_practice_intro_seen') !== 'true'; } catch { return true; }
   });
-  const selectedTarget = getRecitationTarget(targetId);
-  const allowedRawLabels = useMemo(() => allowedRawLabelsForTarget(targetId), [targetId]);
+  const selectedTarget = dynamicTarget ? { id: dynamicTarget.id, label: dynamicLabel ?? `الآية ${dynamicTarget.ayahNumber}`, normalized: dynamicTarget.normalizedText } : getRecitationTarget(targetId);
+  const allowedRawLabels = useMemo(() => dynamicTarget ? [...new Set(dynamicTarget.expectedRawLabels)] : allowedRawLabelsForTarget(targetId), [dynamicTarget, targetId]);
   const onAcceptedLetter = useCallback((prediction: AcceptedArabicSign) => {
     setRecognizedSequence((sequence) => [...sequence, prediction]);
   }, []);
@@ -213,7 +232,7 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
     }
   };
   const finishAttempt = () => {
-    const result = compareAlIkhlasRecitation(recognizedSequence, targetId);
+    const result = dynamicTarget ? compareRecognizedSequence(recognizedSequence, selectedTarget) : compareAlIkhlasRecitation(recognizedSequence, targetId);
     setComparisonResult(result);
     setAttemptHistory(saveAttempt(result));
     setAttemptFinished(true);
@@ -224,8 +243,10 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
     setAcceptanceResetKey((key) => key + 1);
   };
   const repeatAttempt = (attempt: LocalAttempt) => {
-    setTargetId(attempt.targetId);
-    retry();
+    if (RECITATION_TARGETS.some((target) => target.id === attempt.targetId)) {
+      setTargetId(attempt.targetId as RecitationTargetId);
+      retry();
+    }
   };
   const deleteAttempt = (id: string) => setAttemptHistory((history) => removeAttempt(history, id));
   const deleteAllAttempts = () => {
@@ -252,14 +273,14 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
           </div>
           <section className="target-selector" aria-label="هدف التسميع">
             <div><strong>هدف التسميع: {selectedTarget.label}</strong><span>مرجع مطبّع من النص المعروض · {selectedTarget.normalized.length} حرفًا</span></div>
-            <select
+            {!dynamicTarget && <select
               value={targetId}
               onChange={(event) => selectTarget(event.target.value as RecitationTargetId)}
               disabled={recognizedSequence.length > 0 || attemptFinished}
               aria-label="اختر هدف التسميع"
             >
               {RECITATION_TARGETS.map((target) => <option value={target.id} key={target.id}>{target.label}</option>)}
-            </select>
+            </select>}
           </section>
           <div className="practice-grid">
             <section className="practice-card camera-card">
@@ -347,10 +368,13 @@ function App() {
       window.history.replaceState({}, '', '/surah/al-ikhlas');
       return '/surah/al-ikhlas';
     }
-    return path === '/quran' || path === '/surah/al-ikhlas' || path === '/accessibility' || path === '/sources' ? path : '/';
+    return path === '/quran' || path === '/surah/al-ikhlas' || path === '/practice/ayah' || path === '/accessibility' || path === '/sources' || path === '/profile' || path === '/progress' || path === '/saved' || path === '/data' ? path : '/';
   });
   const [reviewed, setReviewed] = useState(readReviewed);
   const [textHidden, setTextHidden] = useState(false);
+  const [dynamicTarget, setDynamicTarget] = useState<KfgqpcRecognitionTarget | null>(null);
+  const [dynamicTargetLabel, setDynamicTargetLabel] = useState<string | null>(null);
+  const accessibilitySettings = readAccessibilitySettings();
   const updateReviewed = (value: boolean) => {
     setReviewed(value);
     try {
@@ -368,24 +392,33 @@ function App() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   };
+  const openRecognitionTarget = (target: KfgqpcRecognitionTarget, label: string) => {
+    setDynamicTarget(target); setDynamicTargetLabel(label); navigate('/practice/ayah');
+  };
 
   useEffect(() => {
     const onPopState = () => {
       const path = window.location.pathname;
-      setRoute(path === '/quran' || path === '/surah/al-ikhlas' || path === '/practice/al-ikhlas' || path === '/accessibility' || path === '/sources' ? path : '/');
+      setRoute(path === '/quran' || path === '/surah/al-ikhlas' || path === '/practice/al-ikhlas' || path === '/practice/ayah' || path === '/accessibility' || path === '/sources' || path === '/profile' || path === '/progress' || path === '/saved' || path === '/data' ? path : '/');
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   return (
-    <ErrorBoundary><div className="app-shell">
+    <ErrorBoundary><div className={`app-shell accessibility-text-${accessibilitySettings.textSize}${accessibilitySettings.highContrast ? ' accessibility-high-contrast' : ''}${accessibilitySettings.reducedMotion ? ' accessibility-reduced-motion' : ''}`}>
       <Header navigate={navigate} route={route} />
       {route === '/' && <Home navigate={navigate} reviewed={reviewed} />}
-      {route === '/quran' && <QuranPage navigate={navigate} />}
+      {route === '/quran' && <QuranPage navigate={navigate} onOpenRecognitionTarget={openRecognitionTarget} />}
       {route === '/surah/al-ikhlas' && <SurahPage navigate={navigate} reviewed={reviewed} textHidden={textHidden} setTextHidden={setTextHidden} />}
       {route === '/practice/al-ikhlas' && <PracticePage navigate={navigate} reviewed={reviewed} setReviewed={updateReviewed} />}
+      {route === '/practice/ayah' && dynamicTarget && <PracticePage navigate={navigate} reviewed={reviewed} setReviewed={updateReviewed} dynamicTarget={dynamicTarget} dynamicLabel={dynamicTargetLabel} />}
+      {route === '/practice/ayah' && !dynamicTarget && <><QuranPage navigate={navigate} onOpenRecognitionTarget={openRecognitionTarget} /><Footer /></>}
       {route === '/accessibility' && <><SignAccessPage onOpenAlIkhlas={() => navigate('/surah/al-ikhlas')} /><Footer /></>}
+      {route === '/profile' && <><ProfilePage /><Footer /></>}
+      {route === '/progress' && <><ProgressPage attempts={readAttemptHistory()} reviewed={reviewed} /><Footer /></>}
+      {route === '/saved' && <><SavedContentPage onOpenQuran={() => navigate('/quran')} /><Footer /></>}
+      {route === '/data' && <><DataManagementPage /><Footer /></>}
       {route === '/sources' && <><SourcesPrivacyPage /><Footer /></>}
     </div></ErrorBoundary>
   );

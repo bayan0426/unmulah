@@ -49,9 +49,22 @@ test('smart Quran ayah actions are contextual and do not claim unavailable conte
   await expect(page.getByRole('button', { name: 'استمع للسورة' })).toBeVisible();
   await page.locator('.smart-ayah-card').first().click();
   await expect(page.getByRole('dialog', { name: /خيارات الآية 1/ })).toBeVisible();
-  await expect(page.getByText('التلاوة الصوتية قريبًا بعد توثيق المصدر')).toBeVisible();
+  await expect(page.getByRole('button', { name: 'حفظ الآية' })).toBeVisible();
   await page.getByRole('button', { name: 'إغلاق خيارات الآية' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
+});
+
+test('local profile, accessibility settings, and saved references are usable', async ({ page }) => {
+  await page.goto('/profile');
+  await expect(page.getByRole('heading', { name: 'ملفي' })).toBeVisible();
+  await page.getByRole('combobox', { name: 'حجم النص' }).selectOption('large');
+  await page.getByLabel('تباين مرتفع').check();
+  await page.goto('/quran?view=smart');
+  await page.locator('.smart-ayah-card').first().click();
+  await page.getByRole('button', { name: 'حفظ الآية' }).click();
+  await page.goto('/saved');
+  await expect(page.getByRole('heading', { name: 'المحفوظات' })).toBeVisible();
+  await expect(page.getByText(/الآية 1/).first()).toBeVisible();
 });
 
 test('reading, practice, details, sources and sign access render without starting camera', async ({ page }) => {

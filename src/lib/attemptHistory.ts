@@ -6,7 +6,7 @@ const MAX_ATTEMPTS = 8;
 export type LocalAttempt = {
   id: string;
   completedAt: string;
-  targetId: RecitationTargetId;
+  targetId: string;
   targetLabel: string;
   correct: number;
   missing: number;

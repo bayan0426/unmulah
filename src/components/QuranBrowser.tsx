@@ -5,12 +5,13 @@ import { filterQuranCatalog, type QuranCatalogFilter } from '../data/quranCatalo
 import { SmartQuranReader } from './SmartQuranReader';
 import { MushafViewer } from './MushafViewer';
 import { SignMushafView } from './SignMushafView';
+import type { KfgqpcRecognitionTarget } from '../lib/quranCoverageAudit';
 
 export function ComingSoonBadge() {
   return <span className="coming-soon">قريبًا</span>;
 }
 
-export function QuranBrowser({ onOpenAlIkhlas }: { onOpenAlIkhlas: () => void }) {
+export function QuranBrowser({ onOpenAlIkhlas, onOpenRecognitionTarget }: { onOpenAlIkhlas: () => void; onOpenRecognitionTarget: (target: KfgqpcRecognitionTarget, label: string) => void }) {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<QuranCatalogFilter>('all');
   const [selected, setSelected] = useState<QuranSurah | null>(() => quranCatalog[0]);
@@ -65,7 +66,7 @@ export function QuranBrowser({ onOpenAlIkhlas }: { onOpenAlIkhlas: () => void })
         </section>
         <aside className="quran-reader-panel" aria-live="polite"><p className="eyebrow">السورة {selected?.number}</p><h2>{selected?.name}</h2><p>{selected?.ayahCount} آيات · النص العثماني الذكي متاح من المصدر الرسمي المحلي.</p>{selected?.number === 112 && <button type="button" className="button button-primary" onClick={onOpenAlIkhlas}>افتح التسميع الذكي</button>}<span className="reader-unavailable">اختر السورة لقراءتها في العارض أدناه.</span></aside>
       </div>
-      <SmartQuranReader key={selected?.number ?? 1} initialSurah={selected?.number ?? 1} onOpenAlIkhlas={onOpenAlIkhlas} />
+      <SmartQuranReader key={selected?.number ?? 1} initialSurah={selected?.number ?? 1} onOpenAlIkhlas={onOpenAlIkhlas} onOpenRecognitionTarget={onOpenRecognitionTarget} />
       </>}
     </main>
   );

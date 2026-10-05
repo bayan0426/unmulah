@@ -7,13 +7,17 @@ import {
   type KfgqpcSmartRecord,
 } from '../data/quran/kfgqpcSmartProvider';
 import { QuranAudioPlayer } from './QuranAudioPlayer';
+import { readQuranReaderSettings, saveQuranReaderSettings, type QuranReaderSettings } from '../lib/quranReaderSettings';
+import { createRecognitionTargetFromKfgqpc, type KfgqpcRecognitionTarget } from '../lib/quranCoverageAudit';
+import { readSavedContent, removeSavedContent, saveQuranAyah, type SavedQuranAyah } from '../lib/savedContent';
 
 type SmartQuranReaderProps = {
   initialSurah?: number;
   onOpenAlIkhlas: () => void;
+  onOpenRecognitionTarget: (target: KfgqpcRecognitionTarget, label: string) => void;
 };
 
-export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas }: SmartQuranReaderProps) {
+export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas, onOpenRecognitionTarget }: SmartQuranReaderProps) {
   const [records, setRecords] = useState<KfgqpcSmartRecord[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [surahNumber, setSurahNumber] = useState(initialSurah);
@@ -21,6 +25,12 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas }: SmartQura
   const [selectedAyah, setSelectedAyah] = useState<number | null>(null);
   const [actionAyah, setActionAyah] = useState<KfgqpcSmartRecord | null>(null);
   const [activeAyah, setActiveAyah] = useState<number | null>(null);
+  const [readerSettings, setReaderSettings] = useState<QuranReaderSettings>(readQuranReaderSettings);
+  const [savedContent, setSavedContent] = useState<SavedQuranAyah[]>(readSavedContent);
+
+  const updateReaderSettings = (next: QuranReaderSettings) => {
+    setReaderSettings(saveQuranReaderSettings(next));
+  };
 
   useEffect(() => {
     loadKfgqpcSmartRecords().then(setRecords).catch((reason: unknown) => {
@@ -47,6 +57,21 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas }: SmartQura
     onOpenAlIkhlas();
   };
 
+  const openRecognitionTarget = (record: KfgqpcSmartRecord) => {
+    const target = createRecognitionTargetFromKfgqpc(record);
+    if (!target) return;
+    setActionAyah(null);
+    onOpenRecognitionTarget(target, `${record.sura_name_ar} · الآية ${record.aya_no}`);
+  };
+  const savedId = actionAyah ? `quran:${actionAyah.sura_no}:${actionAyah.aya_no}` : null;
+  const isSaved = !!savedId && savedContent.some((item) => item.id === savedId);
+  const toggleSavedAyah = (record: KfgqpcSmartRecord) => {
+    const id = `quran:${record.sura_no}:${record.aya_no}`;
+    setSavedContent((current) => current.some((item) => item.id === id)
+      ? removeSavedContent(id)
+      : saveQuranAyah({ surahNumber: record.sura_no, surahName: record.sura_name_ar, ayahNumber: record.aya_no, page: record.page, juz: record.jozz }));
+  };
+
   if (error) {
     return <section className="quran-data-state is-error" role="alert"><strong>تعذر تحميل النص الذكي</strong><span>تحقق من اتصالك أو أعد تحميل الصفحة. لم نعرض نصًا بديلًا غير موثّق.</span><small>{error}</small></section>;
   }
@@ -68,7 +93,17 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas }: SmartQura
       </div>
     </header>
 
-    <label className="smart-search"><span>ابحث في القرآن</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ابحث بكلمات الآية" /></label>
+    <details className="reader-settings">
+      <summary>إعدادات القراءة</summary>
+      <div>
+        <label>حجم النص<select value={readerSettings.fontScale} onChange={(event) => updateReaderSettings({ ...readerSettings, fontScale: event.target.value as QuranReaderSettings['fontScale'] })}><option value="standard">قياسي</option><option value="large">كبير</option><option value="x-large">كبير جدًا</option></select></label>
+        <label>تباعد السطور<select value={readerSettings.lineSpacing} onChange={(event) => updateReaderSettings({ ...readerSettings, lineSpacing: event.target.value as QuranReaderSettings['lineSpacing'] })}><option value="comfortable">مريح</option><option value="spacious">واسع</option></select></label>
+        <label className="reader-focus-toggle"><input type="checkbox" checked={readerSettings.focusMode} onChange={(event) => updateReaderSettings({ ...readerSettings, focusMode: event.target.checked })} /> وضع التركيز</label>
+      </div>
+      <small>تُحفظ هذه التفضيلات على جهازك فقط، ولا تغيّر النص القرآني.</small>
+    </details>
+
+    {!readerSettings.focusMode && <label className="smart-search"><span>ابحث في القرآن</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ابحث بكلمات الآية" /></label>}
     <QuranAudioPlayer surahNumber={surahNumber} ayahCount={surah.ayahs.length} selectedAyah={selectedAyah} onSelectAyah={setSelectedAyah} onActiveAyah={setActiveAyah} />
     {query && <div className="smart-search-results" aria-live="polite">
       <strong>نتائج البحث: {results.length}{results.length === 30 ? '+' : ''}</strong>
@@ -79,7 +114,7 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas }: SmartQura
       {results.length === 0 && <p>لا توجد نتائج مطابقة.</p>}
     </div>}
 
-    <div className="smart-ayah-list" aria-label={`آيات سورة ${surah.name}`}>
+    <div className={`smart-ayah-list reader-font-${readerSettings.fontScale} reader-spacing-${readerSettings.lineSpacing}`} aria-label={`آيات سورة ${surah.name}`}>
       {surah.ayahs.map((ayah) => {
         const record = recordByAyah.get(ayah.ayahNumber);
         return <button type="button" key={ayah.ayahNumber} className={`smart-ayah-card${selectedAyah === ayah.ayahNumber ? ' is-selected' : ''}${activeAyah === ayah.ayahNumber ? ' is-playing' : ''}`} onClick={() => {
@@ -98,10 +133,13 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas }: SmartQura
         <header><div><p className="eyebrow">خيارات الآية</p><h3>{actionAyah.sura_name_ar} · الآية {actionAyah.aya_no}</h3></div><button type="button" aria-label="إغلاق خيارات الآية" onClick={() => setActionAyah(null)}>×</button></header>
         <p>نص القرآن الكريم يظهر في العارض أعلاه. لا يختلط بالتفسير أو بردود الذكاء الاصطناعي.</p>
         <div className="ayah-actions">
-          {actionAyah.sura_no === 112
+          <button type="button" onClick={() => toggleSavedAyah(actionAyah)}>{isSaved ? 'إزالة من المحفوظات' : 'حفظ الآية'}</button>
+          {createRecognitionTargetFromKfgqpc(actionAyah)
+            ? <button type="button" className="button button-primary" onClick={() => openRecognitionTarget(actionAyah)}>ابدأ التسميع</button>
+            : actionAyah.sura_no === 112
             ? <button type="button" className="button button-primary" onClick={openAlIkhlasPractice}>ابدأ التسميع</button>
             : <span className="reader-unavailable">التسميع الذكي لهذه الآية قيد التحقق من تغطية الحروف</span>}
-          <span className="reader-unavailable">التلاوة الصوتية قريبًا بعد توثيق المصدر</span>
+          <span className="reader-unavailable">اختر الآية ثم استخدم مشغّل التلاوة الصوتية أعلاه.</span>
           <span className="reader-unavailable">التفسير الميسر قريبًا</span>
           <span className="reader-unavailable">الهجاء الإصبعي قريبًا</span>
           <span className="reader-unavailable">تفسير المعاني بلغة الإشارة قريبًا</span>
