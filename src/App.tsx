@@ -284,7 +284,7 @@ function PracticePage({ navigate, reviewed, setReviewed, dynamicTarget, dynamicL
             </section>
           </div>
           {comparisonResult && (
-            <section className="practice-card comparison-card" aria-live="polite">
+            <section className="practice-card comparison-card recitation-result-sheet" aria-live="polite">
               <h3>نتيجة التسميع · {comparisonResult.targetLabel}</h3>
               <div className="comparison-summary">
                 <div><span>صحيح</span><strong>{comparisonResult.correct}</strong></div>

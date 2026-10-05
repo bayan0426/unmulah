@@ -9,15 +9,15 @@
 - Home is now a Quran-first journey: it uses real local reading/listening/review data, offers direct Quran and sign-recitation entry points, and keeps the three tracks separate.
 - Reader-mode controls use real Arabic labels. Recite mode explains the supported local sign-recitation flow and does not claim support where it is unavailable.
 - The supported practice screen now includes a Quran reference surface with a user-controlled text reveal around the unchanged camera flow.
+- Deterministic comparison now has a responsive result-sheet presentation; its counts, confidence handling, and comparison algorithm are unchanged.
 - Quran catalogue availability no longer claims Surah-wide recognition support; support remains checked at the selected Ayah level.
 - Finishing a recitation attempt increments the local review-attempt track; it does not alter the recognition or comparison engines.
 - Removed remaining placeholder question-mark strings from the Smart reader, Progress Khatmah tracks, and native Mushaf controls.
 
 ## In progress
-- Refine the inline sign-recitation presentation and add a non-invasive result sheet treatment while leaving the locked AI core untouched.
+- Rebuild the Progress, Profile, and Library pages as editorial layouts and complete responsive visual QA.
 
 ## Not completed
-- Result-sheet refinement for inline recitation.
 - Full Progress/profile/library editorial layouts and mobile visual review.
 - Native Mushaf page assets are blocked pending verified reusable page-native assets.
 - Tafsir and sign-Mushaf content remain blocked pending verified source and reuse terms.
@@ -30,7 +30,7 @@
 5. src/index.css
 
 ## Next step
-Refine the result presentation after an inline sign-recitation attempt without altering HandTrackingCamera or comparison behavior. Then rebuild the Progress/profile/library editorial layouts and perform mobile visual QA.
+Rebuild the Progress, Profile, and Library pages around their existing local data and source-safety states. Then perform mobile visual QA and capture only safe layout refinements.
 
 ## Known risks
 - Do not alter the classifier, MediaPipe, preprocessing, constrained decoding, stabilization, or Quran comparison engine.
