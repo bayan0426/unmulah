@@ -13,11 +13,30 @@ export type QuranCoverageAudit = {
   fullySupportedPercentage: number;
   fullySupportedSurahNumbers: number[];
   canCreateVerifiedRecitationTargets: boolean;
+  emlaey: MachineTargetCoverage;
+};
+
+export type MachineTargetCoverage = {
+  uniqueArabicCharacters: Array<{ character: string; occurrences: number; rawLabel: ArabicSignModelLabel | null }>;
+  mappedCharacters: string[];
+  unmappedCharacters: string[];
+  fullySupportedAyahs: number;
+  fullySupportedPercentage: number;
+  fullySupportedSurahNumbers: number[];
 };
 
 export type VerifiedRecitationTarget = {
   normalizedText: string;
   expectedRawLabels: ArabicSignModelLabel[];
+};
+
+export type KfgqpcRecognitionTarget = VerifiedRecitationTarget & {
+  id: string;
+  surahNumber: number;
+  ayahNumber: number;
+  displayText: string;
+  recognitionTargetText: string;
+  source: 'kfgqpc-emlaey';
 };
 
 const ARABIC_DIACRITICS_AND_QURANIC_MARKS = /[\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED]/g;
@@ -45,6 +64,25 @@ export function createVerifiedRecitationTarget(arabicText: string): VerifiedReci
   return { normalizedText, expectedRawLabels: expectedRawLabels as ArabicSignModelLabel[] };
 }
 
+/**
+ * `aya_text` remains the only Quran display text. The KFGQPC-supplied Emlaey
+ * field is used here solely as a non-displayed, machine-readable comparison
+ * target after every character is checked against the verified classifier map.
+ */
+export function createRecognitionTargetFromKfgqpc(record: KfgqpcSmartRecord): KfgqpcRecognitionTarget | null {
+  const target = createVerifiedRecitationTarget(record.aya_text_emlaey);
+  if (!target) return null;
+  return {
+    ...target,
+    id: `kfgqpc:${record.sura_no}:${record.aya_no}`,
+    surahNumber: record.sura_no,
+    ayahNumber: record.aya_no,
+    displayText: record.aya_text,
+    recognitionTargetText: target.normalizedText,
+    source: 'kfgqpc-emlaey',
+  };
+}
+
 export function auditKfgqpcSmartCoverage(records: readonly KfgqpcSmartRecord[]): QuranCoverageAudit {
   const observed = new Set<string>();
   const mapped = new Set<string>();
@@ -54,8 +92,19 @@ export function auditKfgqpcSmartCoverage(records: readonly KfgqpcSmartRecord[]):
   let mappedArabicLetters = 0;
   let fullySupportedAyahs = 0;
   const fullySupportedSurahs = new Set<number>();
+  const emlaeyCounts = new Map<string, number>();
+  let emlaeyFullySupportedAyahs = 0;
+  const emlaeyFullySupportedSurahs = new Set<number>();
 
   for (const record of records) {
+    const emlaeyTarget = createVerifiedRecitationTarget(record.aya_text_emlaey);
+    for (const character of normalizeArabicForCoverage(record.aya_text_emlaey)) {
+      emlaeyCounts.set(character, (emlaeyCounts.get(character) ?? 0) + 1);
+    }
+    if (emlaeyTarget) {
+      emlaeyFullySupportedAyahs += 1;
+      emlaeyFullySupportedSurahs.add(record.sura_no);
+    }
     if (PRIVATE_USE_GLYPH.test(record.aya_text)) {
       displayEncodingBlockedAyahs += 1;
       continue;
@@ -91,5 +140,13 @@ export function auditKfgqpcSmartCoverage(records: readonly KfgqpcSmartRecord[]):
     fullySupportedPercentage: records.length === 0 ? 0 : fullySupportedAyahs / records.length,
     fullySupportedSurahNumbers: [...fullySupportedSurahs].sort((first, second) => first - second),
     canCreateVerifiedRecitationTargets: displayEncodingBlockedAyahs === 0 && fullySupportedAyahs === records.length && records.length > 0,
+    emlaey: {
+      uniqueArabicCharacters: [...emlaeyCounts.entries()].sort(([first], [second]) => first.localeCompare(second, 'ar')).map(([character, occurrences]) => ({ character, occurrences, rawLabel: characterToRawLabel.get(character) ?? null })),
+      mappedCharacters: [...emlaeyCounts.keys()].filter((character) => characterToRawLabel.has(character)).sort(),
+      unmappedCharacters: [...emlaeyCounts.keys()].filter((character) => !characterToRawLabel.has(character)).sort(),
+      fullySupportedAyahs: emlaeyFullySupportedAyahs,
+      fullySupportedPercentage: records.length === 0 ? 0 : emlaeyFullySupportedAyahs / records.length,
+      fullySupportedSurahNumbers: [...emlaeyFullySupportedSurahs].sort((first, second) => first - second),
+    },
   };
 }

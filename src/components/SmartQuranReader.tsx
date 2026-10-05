@@ -6,6 +6,7 @@ import {
   searchSmartQuran,
   type KfgqpcSmartRecord,
 } from '../data/quran/kfgqpcSmartProvider';
+import { QuranAudioPlayer } from './QuranAudioPlayer';
 
 type SmartQuranReaderProps = {
   initialSurah?: number;
@@ -19,6 +20,7 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas }: SmartQura
   const [query, setQuery] = useState('');
   const [selectedAyah, setSelectedAyah] = useState<number | null>(null);
   const [actionAyah, setActionAyah] = useState<KfgqpcSmartRecord | null>(null);
+  const [activeAyah, setActiveAyah] = useState<number | null>(null);
 
   useEffect(() => {
     loadKfgqpcSmartRecords().then(setRecords).catch((reason: unknown) => {
@@ -67,6 +69,7 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas }: SmartQura
     </header>
 
     <label className="smart-search"><span>ابحث في القرآن</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ابحث بكلمات الآية" /></label>
+    <QuranAudioPlayer surahNumber={surahNumber} ayahCount={surah.ayahs.length} selectedAyah={selectedAyah} onSelectAyah={setSelectedAyah} onActiveAyah={setActiveAyah} />
     {query && <div className="smart-search-results" aria-live="polite">
       <strong>نتائج البحث: {results.length}{results.length === 30 ? '+' : ''}</strong>
       {results.map((result) => <button type="button" key={result.id} onClick={() => { setSurahNumber(result.sura_no); setSelectedAyah(result.aya_no); setQuery(''); }}>
@@ -79,7 +82,7 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas }: SmartQura
     <div className="smart-ayah-list" aria-label={`آيات سورة ${surah.name}`}>
       {surah.ayahs.map((ayah) => {
         const record = recordByAyah.get(ayah.ayahNumber);
-        return <button type="button" key={ayah.ayahNumber} className={`smart-ayah-card${selectedAyah === ayah.ayahNumber ? ' is-selected' : ''}`} onClick={() => {
+        return <button type="button" key={ayah.ayahNumber} className={`smart-ayah-card${selectedAyah === ayah.ayahNumber ? ' is-selected' : ''}${activeAyah === ayah.ayahNumber ? ' is-playing' : ''}`} onClick={() => {
           setSelectedAyah(ayah.ayahNumber);
           if (record) setActionAyah(record);
         }}>

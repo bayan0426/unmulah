@@ -625,6 +625,14 @@ button:focus-visible, a:focus-visible {
 .smart-reader-actions select,.smart-search input { min-height:42px;padding:0 10px;border:1px solid rgba(3,63,52,.2);border-radius:9px;background:var(--paper);color:var(--deep);font:14px var(--font-arabic); }
 .smart-search { margin-top:24px; }
 .smart-search input { width:100%;font-size:16px; }
+.quran-audio-player { margin-top:16px;padding:16px;border:1px solid rgba(3,63,52,.16);border-radius:14px;background:rgba(217,230,210,.25);display:grid;gap:10px; }
+.quran-audio-player strong,.quran-audio-player span { display:block;color:var(--deep);font-family:var(--font-arabic); }
+.quran-audio-player span { color:rgba(24,33,29,.65);font-size:12px;margin-top:2px; }
+.audio-controls,.audio-options { display:flex;flex-wrap:wrap;align-items:center;gap:8px; }
+.audio-controls button,.audio-options select { min-height:36px;padding:0 11px;border:1px solid rgba(3,63,52,.2);border-radius:9px;background:var(--paper);color:var(--deep);font:13px var(--font-arabic);cursor:pointer; }
+.audio-options label { display:flex;align-items:center;gap:6px;color:rgba(24,33,29,.7);font:12px var(--font-arabic); }
+.audio-options input { accent-color:var(--forest); }
+.quran-audio-player small { color:#834238;font:12px var(--font-arabic); }
 .smart-search-results { margin-top:12px;padding:13px;border:1px dashed rgba(3,63,52,.23);border-radius:12px; }
 .smart-search-results > strong { color:var(--deep);font:600 15px var(--font-arabic); }
 .smart-search-results button { width:100%;margin-top:9px;padding:11px;border:1px solid rgba(3,63,52,.12);border-radius:10px;background:rgba(217,230,210,.2);display:grid;gap:7px;text-align:right;cursor:pointer; }
@@ -636,6 +644,7 @@ button:focus-visible, a:focus-visible {
 .smart-ayah-card:last-child { border-bottom:0; }
 .smart-ayah-card:hover { background:rgba(217,230,210,.46); }
 .smart-ayah-card.is-selected { background:rgba(201,169,106,.12);box-shadow:inset -3px 0 var(--gold); }
+.smart-ayah-card.is-playing { background:rgba(174,232,190,.32);box-shadow:inset -3px 0 var(--forest); }
 .smart-ayah-meta { display:flex;justify-content:space-between;gap:14px;color:rgba(24,33,29,.6);font:12px var(--font-arabic); }
 .smart-ayah-card p { max-width:900px;margin:11px auto 0;text-align:right;color:var(--deep); }
 .smart-ayah-card small { display:block;margin-top:5px;color:rgba(24,33,29,.5);font:11px var(--font-arabic); }

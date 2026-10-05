@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { KfgqpcSmartRecord } from '../data/quran/kfgqpcSmartProvider';
-import { auditKfgqpcSmartCoverage, createVerifiedRecitationTarget } from './quranCoverageAudit';
+import { auditKfgqpcSmartCoverage, createRecognitionTargetFromKfgqpc, createVerifiedRecitationTarget } from './quranCoverageAudit';
 
 const record = (aya_text: string): KfgqpcSmartRecord => ({
   id: 1, jozz: 1, sura_no: 1, sura_name_en: 'Test', sura_name_ar: 'اختبار', page: 1,
@@ -27,5 +27,24 @@ describe('Quran-wide recitation coverage audit', () => {
       fullySupportedSurahNumbers: [],
       canCreateVerifiedRecitationTargets: false,
     });
+  });
+
+  it('keeps display text and its verified Emlaey machine target distinct', () => {
+    const source = record('\uE001\uE002');
+    source.aya_text_emlaey = 'قل هو الله أحد';
+    const target = createRecognitionTargetFromKfgqpc(source);
+    expect(target).toMatchObject({ displayText: '\uE001\uE002', recognitionTargetText: 'قلهواللهاحد', source: 'kfgqpc-emlaey' });
+    expect(target?.displayText).not.toBe(target?.recognitionTargetText);
+  });
+
+  it('audits the Emlaey target separately from the PUA display text', () => {
+    const supported = record('\uE001');
+    supported.aya_text_emlaey = 'ا';
+    const unsupported = record('\uE002');
+    unsupported.id = 2;
+    unsupported.aya_no = 2;
+    unsupported.aya_text_emlaey = 'ب';
+    const audit = auditKfgqpcSmartCoverage([supported, unsupported]);
+    expect(audit.emlaey).toMatchObject({ mappedCharacters: ['ا'], unmappedCharacters: ['ب'], fullySupportedAyahs: 1, fullySupportedPercentage: .5, fullySupportedSurahNumbers: [1] });
   });
 });

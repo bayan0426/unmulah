@@ -25,9 +25,26 @@ zero fully supported ayahs, and an explicit display-encoding blocker; it does
 not treat the Emlaey search field as a substitute for Quran display text. This
 prevents an unsupported claim of Quran-wide AI recitation coverage.
 
+The separate, non-displayed `aya_text_emlaey` field was then audited only as a
+machine-comparison candidate. After deterministic normalization it contains 32
+unique Arabic characters: 13 have verified classifier mappings and 19 do not.
+That yields **45 / 6,236** fully supported ayahs (0.7216%) across **32 / 114**
+surahs. It is sufficient to model a source-separated target type, but not to
+claim Quran-wide support or silently enable targets containing unresolved
+letters.
+
 ## Deferred external content
 
 Audio, tafsir, and a digital page-native Mushaf need a source with explicit
 reuse terms and integration details. They remain unavailable rather than being
 filled with unverified assets, embedded scraped content, or generated Quranic
 material.
+
+## Audio implementation
+
+The Smart Quran reader now has an opt-in MP3Quran player using the documented
+public v3 API. It uses Ahmed bin Ali Al-Ajmi, Hafs `read=5`, whose API response
+reports 114 surahs and real per-ayah timing. Play, pause, stop, previous/next
+ayah seeking, selected-ayah repeat, volume, and repeat counts are local browser
+controls. Audio never autoplays. The player fetches timing after the user asks
+to play and does not bundle an MP3 asset.

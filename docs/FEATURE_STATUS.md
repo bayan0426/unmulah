@@ -10,7 +10,7 @@
 | Local attempt history | Implemented | Metadata only in browser localStorage. |
 | Full official Quran import | Implemented | 6,236 owner-supplied official Hafs Smart records, verified at load time; smart-font display and Emlaey-only search. |
 | Interactive Quran reading | Implemented | Native responsive Smart Quran reader with ayah metadata and contextual actions. |
-| Quran-wide AI targets | Blocked | The supplied Smart `aya_text` uses private-use font glyphs in all 6,236 records; no official glyph-to-Arabic comparison map is bundled. |
+| Quran-wide AI targets | Partial | Display `aya_text` is PUA-only. The official non-displayed Emlaey field has 45 / 6,236 ayahs with complete verified classifier coverage; general target routing remains limited pending UI generalization. |
 | Mushaf page browsing | Partial | Temporary official external reference only; native page viewer awaits supplied/reviewed official vector assets. |
 | Tafsir Muyassar | Coming Soon | No Tafsir text is bundled. |
 | Fingerspelling image/video assets | Partial | Provider/viewer/importer ready; no assets included. |

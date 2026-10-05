@@ -124,6 +124,17 @@ It was not downloaded or integrated because the app has not recorded the exact
 package download, checksum, and redistribution decision. No Tafsir text is
 present in the app. See the official [developer platform](https://qurancomplex.gov.sa/en/techquran/dev/).
 
+## Quran audio
+
+The smart reader uses the official public [MP3Quran developer API](https://www.mp3quran.net/ar/api)
+at runtime; no audio is bundled or preloaded. The selected read is **Ahmed bin
+Ali Al-Ajmi**, Hafs `read=5`, whose official API record reports all 114 surahs
+and per-ayah timing. Audio and timing requests are made only after an explicit
+play action. The API's timing data is used as supplied for seeking, repeat, and
+the active-ayeh indicator; no boundary is estimated. Reuse terms for downloaded
+or redistributed audio remain unverified, so no media asset is copied into this
+repository.
+
 ## Religious reference note
 
 The project-supplied reference identifies Permanent Committee fatwa **25465**,
