@@ -5,10 +5,12 @@ import { QuranBrowser } from './components/QuranBrowser';
 import { SignAccessPage, SourcesPrivacyPage } from './components/InfoPages';
 import { DataManagementPage, ProfilePage, ProgressPage, SavedContentPage } from './components/ExperiencePages';
 import { LibraryPage } from './components/LibraryPage';
+import { HomeExperience } from './components/HomeExperience';
 import type { KfgqpcRecognitionTarget } from './lib/quranCoverageAudit';
 import { readAccessibilitySettings } from './lib/accessibilitySettings';
-import { readLocalProfile, recordLocalActivity } from './lib/localExperience';
+import { recordLocalActivity } from './lib/localExperience';
 import { quranSource } from './data/surahAlIkhlas';
+import { addQuranProgress } from './lib/quranProgress';
 import { clearAttemptHistory, readAttemptHistory, removeAttempt, saveAttempt, type LocalAttempt } from './lib/attemptHistory';
 import {
   RECITATION_TARGETS,
@@ -88,57 +90,7 @@ function Footer() {
 }
 
 function Home({ navigate, reviewed }: { navigate: (path: Route) => void; reviewed: boolean }) {
-  const profile = readLocalProfile();
-  const homeMessage = profile.accessibility === 'sign-first' || profile.hearing === 'deaf-sign'
-    ? 'ابدأ من القراءة المرئية ثم انتقل إلى مساحة التسميع بالإشارة عندما تكون الآية مدعومة.'
-    : profile.goal === 'memorize'
-      ? 'اقرأ الآية، واستمع إلى تلاوتها، ثم راجعها على مهل.'
-      : profile.age === 'child'
-        ? 'ابدأ بخطوات قصيرة وواضحة، ثم احتفل بتقدمك في حديقة أُنملة.'
-        : 'اقرأ النص المعتمد، واستمع إلى التلاوة، ثم راجع بطريقتك.';
-  return (
-    <>
-      <main>
-        <section className="home-hero" aria-labelledby="home-title">
-          <div className="hero-copy">
-            <div className="eyebrow">تعلّم القرآن على مهل</div>
-            <h1 id="home-title" className="hero-title">تعلّم القرآن<br /><span>خطوةً بخطوة</span></h1>
-            <p className="hero-description">{homeMessage}</p>
-            <div className="hero-actions">
-              <AppLink href="/quran" navigate={navigate} className="button button-primary">ابدأ التعلّم <Icon name="arrow" /></AppLink>
-              <AppLink href="/surah/al-ikhlas" navigate={navigate} className="button button-secondary"><Icon name="book" />سورة الإخلاص</AppLink>
-            </div>
-          </div>
-          <div className="hero-art" aria-hidden="true">
-            <div className="arch-scene">
-              <div className="arch-halo" />
-              <span className="scene-mark one" />
-              <span className="scene-mark two" />
-              <div className="hero-emblem"><img src="/brand/unmulah-logo.png" alt="" /></div>
-              <div className="orbit-label"><span>مسار اليوم</span><strong>الإخلاص · ٤ آيات</strong></div>
-            </div>
-          </div>
-        </section>
-        <section className="home-progress" aria-label="تقدمك">
-          <div className="progress-copy">
-            <div className="progress-icon"><Icon name={reviewed ? 'check' : 'leaf'} size={19} /></div>
-            <div><strong>مراجعتك، كما سجّلتها</strong><span>حالة محلية على هذا الجهاز — دون تقييم آلي</span></div>
-          </div>
-          <div className={`progress-state${reviewed ? ' is-done' : ''}`}><span className="status-dot" />{reviewed ? 'تم تسجيل المراجعة' : 'لم تُسجّل مراجعة بعد'}</div>
-        </section>
-        <section className="home-journey" aria-labelledby="journey-title">
-          <div><p className="eyebrow">رحلتك في أُنملة</p><h2 id="journey-title">اقرأ، راجع، سمّع بالإشارة، ثم راجع نتيجتك</h2></div>
-          <ol><li><span>١</span><strong>اقرأ القرآن</strong><small>نص موثّق حيث يتوفر محليًا</small></li><li><span>٢</span><strong>راجع بهدوء</strong><small>أخفِ النص عندما تصبح مستعدًا</small></li><li><span>٣</span><strong>سمّع بالإشارة</strong><small>يتوفر MVP لسورة الإخلاص</small></li><li><span>٤</span><strong>راجع النتيجة</strong><small>مقارنة حتمية للتسلسل المقبول</small></li></ol>
-        </section>
-        <section className="home-capabilities" aria-label="قدرات أُنملة">
-          <article><Icon name="book" size={22} /><h2>قراءة القرآن</h2><p>فهرس من ١١٤ سورة، مع قراءة نص الإخلاص المحلي الموثّق.</p><AppLink href="/quran" navigate={navigate}>استكشف القرآن</AppLink></article>
-          <article><Icon name="check" size={22} /><h2>التسميع الذكي بالإشارة</h2><p>معالجة محلية للحروف لسورة الإخلاص، مع تسلسل ومقارنة شفافة.</p><AppLink href="/surah/al-ikhlas" navigate={navigate}>ابدأ بالإخلاص</AppLink></article>
-          <article><Icon name="eye" size={22} /><h2>الوصول القرآني بالإشارة</h2><p>هندسة جاهزة لأصول هجاء إصبعي موثّقة؛ لا نعرض أصولًا غير مرخّصة.</p><AppLink href="/accessibility" navigate={navigate}>اعرف المزيد</AppLink></article>
-        </section>
-      </main>
-      <Footer />
-    </>
-  );
+  return <><HomeExperience navigate={navigate} reviewed={reviewed} /><Footer /></>;
 }
 
 function QuranPage({ navigate, onOpenRecognitionTarget }: { navigate: (path: Route) => void; onOpenRecognitionTarget: (target: KfgqpcRecognitionTarget, label: string) => void }) {
@@ -237,6 +189,7 @@ function PracticePage({ navigate, reviewed, setReviewed, dynamicTarget, dynamicL
     setComparisonResult(result);
     setAttemptHistory(saveAttempt(result));
     recordLocalActivity('attempt');
+    addQuranProgress('reviewAttempts', 1);
     setAttemptFinished(true);
   };
   const selectTarget = (nextTargetId: RecitationTargetId) => {

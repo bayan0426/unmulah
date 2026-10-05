@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 test('home and primary navigation render', async ({ page }) => {
   await page.goto('/');
-  await expect(page.getByRole('heading', { name: /تعلّم القرآن/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: /رحلتك مع القرآن/ })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'التنقل الرئيسي' })).toBeVisible();
   await page.getByRole('navigation', { name: 'التنقل الرئيسي' }).getByRole('link', { name: 'القرآن', exact: true }).click();
   await expect(page.getByRole('tab', { name: 'النص الذكي' })).toBeVisible();
