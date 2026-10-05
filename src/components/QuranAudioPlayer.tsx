@@ -7,11 +7,13 @@ type QuranAudioPlayerProps = {
   selectedAyah: number | null;
   onSelectAyah: (ayahNumber: number) => void;
   onActiveAyah: (ayahNumber: number | null) => void;
+  onListeningProgress?: (seconds: number) => void;
 };
 
-export function QuranAudioPlayer({ surahNumber, ayahCount, selectedAyah, onSelectAyah, onActiveAyah }: QuranAudioPlayerProps) {
+export function QuranAudioPlayer({ surahNumber, ayahCount, selectedAyah, onSelectAyah, onActiveAyah, onListeningProgress }: QuranAudioPlayerProps) {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const repeatCompletions = useRef(0);
+  const countedSecond = useRef(0);
   const [timings, setTimings] = useState<AyahTiming[]>([]);
   const [status, setStatus] = useState<'idle' | 'loading' | 'playing' | 'paused' | 'error'>('idle');
   const [volume, setVolume] = useState(.8);
@@ -31,7 +33,7 @@ export function QuranAudioPlayer({ surahNumber, ayahCount, selectedAyah, onSelec
     if (!audio) return;
     audio.pause();
     audio.currentTime = 0;
-    setStatus('idle'); setTimings([]); setElapsed(0); setDuration(0); setRangeStart(1); setRangeEnd(ayahCount); setRangeRepeatActive(false); repeatCompletions.current = 0; onActiveAyah(null);
+    setStatus('idle'); countedSecond.current = 0; setTimings([]); setElapsed(0); setDuration(0); setRangeStart(1); setRangeEnd(ayahCount); setRangeRepeatActive(false); repeatCompletions.current = 0; onActiveAyah(null);
   }, [surahNumber, reciter, onActiveAyah]);
 
   const ensureTimings = async () => {
@@ -89,6 +91,7 @@ export function QuranAudioPlayer({ surahNumber, ayahCount, selectedAyah, onSelec
     const audio = audioRef.current;
     if (!audio) return;
     setElapsed(audio.currentTime);
+    const wholeSecond = Math.floor(audio.currentTime); if (wholeSecond > countedSecond.current) { onListeningProgress?.(wholeSecond - countedSecond.current); countedSecond.current = wholeSecond; }
     const active = timings.find((timing) => timing.ayah > 0 && audio.currentTime * 1000 >= timing.start_time && audio.currentTime * 1000 < timing.end_time) ?? null;
     onActiveAyah(active?.ayah ?? null);
     const range = rangeRepeatActive ? timingRange(timings, rangeStart, rangeEnd) : null;

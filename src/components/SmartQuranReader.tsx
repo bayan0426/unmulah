@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { quranCatalog } from '../data/quranCatalog';
 import {
   getSmartSurah,
@@ -11,6 +11,7 @@ import { readQuranReaderSettings, saveQuranReaderSettings, type QuranReaderSetti
 import { createRecognitionTargetFromKfgqpc, type KfgqpcRecognitionTarget } from '../lib/quranCoverageAudit';
 import { readSavedContent, removeSavedContent, saveQuranAyah, type SavedQuranAyah } from '../lib/savedContent';
 import { recordLocalActivity } from '../lib/localExperience';
+import { addQuranProgress, readQuranProgress } from '../lib/quranProgress';
 
 type SmartQuranReaderProps = {
   initialSurah?: number;
@@ -28,6 +29,9 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas, onOpenRecog
   const [activeAyah, setActiveAyah] = useState<number | null>(null);
   const [readerSettings, setReaderSettings] = useState<QuranReaderSettings>(readQuranReaderSettings);
   const [savedContent, setSavedContent] = useState<SavedQuranAyah[]>(readSavedContent);
+  const [mode, setMode] = useState<'read' | 'listen' | 'recite' | 'test'>('read');
+  const [progress, setProgress] = useState(readQuranProgress);
+  const activeSince = useRef<number | null>(null);
 
   const updateReaderSettings = (next: QuranReaderSettings) => {
     setReaderSettings(saveQuranReaderSettings(next));
@@ -42,6 +46,13 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas, onOpenRecog
   useEffect(() => {
     if (records) recordLocalActivity('surah-read');
   }, [records, surahNumber]);
+
+  useEffect(() => {
+    const start = () => { activeSince.current = Date.now(); };
+    const flush = () => { if (activeSince.current !== null && document.visibilityState === 'visible') { const seconds = Math.min(300, Math.floor((Date.now() - activeSince.current) / 1000)); if (seconds >= 5) setProgress(addQuranProgress('readingSeconds', seconds)); } activeSince.current = null; };
+    start(); window.addEventListener('focus', start); window.addEventListener('blur', flush); document.addEventListener('visibilitychange', () => document.visibilityState === 'hidden' ? flush() : start());
+    return () => { flush(); window.removeEventListener('focus', start); window.removeEventListener('blur', flush); };
+  }, [surahNumber]);
 
   useEffect(() => {
     const closeOnEscape = (event: KeyboardEvent) => {
@@ -87,6 +98,7 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas, onOpenRecog
 
   return <section className="smart-quran-reader" aria-label="النص العثماني الذكي">
     <header className="smart-reader-header">
+      <div className="reader-mode-launcher" aria-label="????? ??????"><button type="button" className={mode === 'read' ? 'is-active' : ''} onClick={() => setMode('read')}>?????</button><button type="button" className={mode === 'listen' ? 'is-active' : ''} onClick={() => setMode('listen')}>?????</button><button type="button" className={mode === 'recite' ? 'is-active' : ''} onClick={() => setMode('recite')}>???? ????????</button><button type="button" className={mode === 'test' ? 'is-active' : ''} onClick={() => setMode('test')}>????? ????</button></div>
       <div><p className="eyebrow">النص العثماني الذكي</p><h2>{surah.name}</h2><p>السورة {surahNumber} · {surah.ayahs.length} آية · حفص عن عاصم</p></div>
       <div className="smart-reader-actions">
         <label>اختر سورة
@@ -109,7 +121,10 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas, onOpenRecog
     </details>
 
     {!readerSettings.focusMode && <label className="smart-search"><span>ابحث في القرآن</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="ابحث بكلمات الآية" /></label>}
-    <QuranAudioPlayer surahNumber={surahNumber} ayahCount={surah.ayahs.length} selectedAyah={selectedAyah} onSelectAyah={setSelectedAyah} onActiveAyah={setActiveAyah} />
+    {mode === 'listen' && <QuranAudioPlayer surahNumber={surahNumber} ayahCount={surah.ayahs.length} selectedAyah={selectedAyah} onSelectAyah={setSelectedAyah} onActiveAyah={setActiveAyah} onListeningProgress={(seconds) => setProgress(addQuranProgress('listeningSeconds', seconds))} />}
+    <div className="quran-progress-strip"><span>???? ???????: {Math.floor(progress.readingSeconds / 60)} ?</span><span>???? ????????: {Math.floor(progress.listeningSeconds / 60)} ?</span><span>???????? / ???????: {progress.reviewAttempts}</span></div>
+    {mode === 'recite' && <p className="reader-mode-note">???? ??? ?? ???? ??????? ???????? ?? ????????? ???? ???? ?? ????? ????? ?????? ??? ?????.</p>}
+    {mode === 'test' && <p className="reader-mode-note">???? ???? ???????? ?? ???? ????. ?? ???? ??? ???????? ???????? ?????.</p>}
     {query && <div className="smart-search-results" aria-live="polite">
       <strong>نتائج البحث: {results.length}{results.length === 30 ? '+' : ''}</strong>
       {results.map((result) => <button type="button" key={result.id} onClick={() => { setSurahNumber(result.sura_no); setSelectedAyah(result.aya_no); setQuery(''); }}>

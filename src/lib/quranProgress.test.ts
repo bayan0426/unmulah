@@ -1,0 +1,3 @@
+﻿import { describe, expect, it } from 'vitest';
+import { addQuranProgress, readQuranProgress } from './quranProgress';
+describe('quran progress', () => { it('keeps reading, listening and review metrics separate', () => { let value = ''; const storage = { getItem: () => value || null, setItem: (_: string, next: string) => { value = next; } } as unknown as Storage; addQuranProgress('readingSeconds', 61, storage); addQuranProgress('listeningSeconds', 30, storage); addQuranProgress('reviewAttempts', 1, storage); expect(readQuranProgress(storage)).toEqual({ readingSeconds: 61, listeningSeconds: 30, reviewAttempts: 1 }); }); });

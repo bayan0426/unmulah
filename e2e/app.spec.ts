@@ -45,8 +45,8 @@ test('official smart Quran loads all key Surah endpoints and search metadata', a
 
 test('smart Quran ayah actions are contextual and do not claim unavailable content', async ({ page }) => {
   await page.goto('/quran?view=smart');
-  await expect(page.getByRole('region', { name: 'التلاوة الصوتية' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'استمع للسورة' })).toBeVisible();
+  await page.locator('.reader-mode-launcher button').nth(1).click();
+  await expect(page.locator('.quran-audio-player')).toBeVisible();
   await page.getByRole('combobox', { name: 'اختر سورة' }).selectOption('112');
   await page.locator('.smart-ayah-card').first().click();
   await expect(page.getByRole('dialog', { name: /خيارات الآية 1/ })).toBeVisible();

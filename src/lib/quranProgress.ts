@@ -1,0 +1,6 @@
+﻿export type QuranProgress = { readingSeconds: number; listeningSeconds: number; reviewAttempts: number };
+const KEY = 'unmulah.quran-progress.v1';
+const empty: QuranProgress = { readingSeconds: 0, listeningSeconds: 0, reviewAttempts: 0 };
+export function readQuranProgress(storage: Storage = window.localStorage): QuranProgress { try { const value = JSON.parse(storage.getItem(KEY) ?? 'null'); return value && typeof value.readingSeconds === 'number' && typeof value.listeningSeconds === 'number' && typeof value.reviewAttempts === 'number' ? value : empty; } catch { return empty; } }
+export function saveQuranProgress(next: QuranProgress, storage: Storage = window.localStorage): QuranProgress { const safe = { readingSeconds: Math.max(0, Math.floor(next.readingSeconds)), listeningSeconds: Math.max(0, Math.floor(next.listeningSeconds)), reviewAttempts: Math.max(0, Math.floor(next.reviewAttempts)) }; try { storage.setItem(KEY, JSON.stringify(safe)); } catch {} return safe; }
+export function addQuranProgress(kind: keyof QuranProgress, amount: number, storage: Storage = window.localStorage) { const current = readQuranProgress(storage); return saveQuranProgress({ ...current, [kind]: current[kind] + amount }, storage); }
