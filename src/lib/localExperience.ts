@@ -6,7 +6,7 @@ export type LearningGoal = 'memorize' | 'review' | 'learn-quran' | 'explore-isla
 export type LocalProfile = { accessibility: AccessibilityPreference; hearing: HearingPreference; age: AgeExperience; goal: LearningGoal };
 export type ActivityKind = 'attempt' | 'review' | 'surah-read' | 'saved-item';
 export type LocalActivity = { kind: ActivityKind; occurredAt: string };
-export type ExperienceProgress = { points: number; streak: number; garden: 'seed' | 'sprout' | 'leaves' | 'flower'; achievements: string[]; latestAttemptAt: string | null; bestAccuracy: number | null; challenge: ActivityKind };
+export type ExperienceProgress = { points: number; streak: number; garden: 'seed' | 'seedling' | 'plant' | 'tree' | 'garden'; achievements: string[]; latestAttemptAt: string | null; bestAccuracy: number | null; challenge: ActivityKind };
 
 const PROFILE_KEY = 'unmulah.profile.v1';
 const ACTIVITY_KEY = 'unmulah.activities.v1';
@@ -54,7 +54,7 @@ export function deriveExperienceProgress(activities: readonly LocalActivity[], a
     ...(activities.some((item) => item.kind === 'surah-read') ? ['first-surah'] : []),
     ...(streak >= 3 ? ['three-day-streak'] : []),
   ];
-  return { points, streak, garden: points >= 150 ? 'flower' : points >= 70 ? 'leaves' : points >= 20 ? 'sprout' : 'seed', achievements, latestAttemptAt: activities.find((item) => item.kind === 'attempt')?.occurredAt ?? null, bestAccuracy: attemptAccuracies.length ? Math.max(...attemptAccuracies) : null, challenge: deterministicChallenge(today) };
+  return { points, streak, garden: points >= 1000 ? 'garden' : points >= 500 ? 'tree' : points >= 250 ? 'plant' : points >= 100 ? 'seedling' : 'seed', achievements, latestAttemptAt: activities.find((item) => item.kind === 'attempt')?.occurredAt ?? null, bestAccuracy: attemptAccuracies.length ? Math.max(...attemptAccuracies) : null, challenge: deterministicChallenge(today) };
 }
 
 function validateProfile(value: unknown): LocalProfile | null {
