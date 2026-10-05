@@ -93,3 +93,12 @@ test('reading, practice, details, sources and sign access render without startin
   await page.goto('/library');
   await expect(page.getByRole('heading', { name: 'مكتبة أُنملة' })).toBeVisible();
 });
+
+test('primary flagship surfaces fit a mobile viewport', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  for (const path of ['/', '/quran?view=smart', '/surah/al-ikhlas', '/progress', '/profile', '/library']) {
+    await page.goto(path);
+    await expect(page.locator('.mobile-nav')).toBeVisible();
+    await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
+  }
+});

@@ -14,12 +14,12 @@
 - Finishing a recitation attempt increments the local review-attempt track; it does not alter the recognition or comparison engines.
 - Removed remaining placeholder question-mark strings from the Smart reader, Progress Khatmah tracks, and native Mushaf controls.
 - Profile now has a local-only preference editor and accessibility panel; Library now separates the official Quran offering from source-pending religious material.
+- Mobile Playwright coverage verifies Home, Quran, Surah, Progress, Profile, and Library at 390px without horizontal overflow.
 
 ## In progress
-- Perform mobile visual QA for the rebuilt flagship surfaces and capture only safe layout refinements.
+- Safe flagship UI backlog is complete; remaining items require verified external source or reuse decisions.
 
 ## Not completed
-- Mobile visual review and minor responsive refinements.
 - Native Mushaf page assets are blocked pending verified reusable page-native assets.
 - Tafsir and sign-Mushaf content remain blocked pending verified source and reuse terms.
 
@@ -31,7 +31,7 @@
 5. src/index.css
 
 ## Next step
-Perform mobile visual QA for Home, Quran, practice, Progress, Profile, and Library. Make only safe responsive fixes, then document source-blocked native Mushaf, Tafsir, and sign-Mushaf work.
+Obtain explicit reusable official native Mushaf page assets, Tafsir source terms, and sign-Mushaf reuse/embedding terms before implementing the remaining content.
 
 ## Known risks
 - Do not alter the classifier, MediaPipe, preprocessing, constrained decoding, stabilization, or Quran comparison engine.

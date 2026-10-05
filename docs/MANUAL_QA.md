@@ -32,3 +32,7 @@
 - [ ] Check `prefers-reduced-motion` behavior.
 - [ ] Open sources/privacy and verify local-data controls.
 - [ ] Check sign-access placeholders do not imply real sign assets.
+
+## Automated mobile viewport check
+
+Playwright covers the Home, Quran smart reader, Al-Ikhlas reading page, Progress, Profile, and Library at **390 × 844**. It verifies that the mobile navigation is visible and that the document does not overflow horizontally. This does not request camera permission or start a camera stream.
