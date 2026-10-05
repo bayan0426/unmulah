@@ -8,12 +8,25 @@ export const ARABIC_SIGN_MODEL_LABELS = [
 
 export type ArabicSignModelLabel = (typeof ARABIC_SIGN_MODEL_LABELS)[number];
 
-// Verified against the ArASL class mapping; only verified mappings are exposed to the UI.
+// Verified against the published ArASL class map. `al` is a compound token (ال),
+// so it remains outside the character-by-character Quran comparison map.
 export const VERIFIED_ARABIC_SIGN_LABELS: Partial<Record<ArabicSignModelLabel, string>> = {
+  ain: 'ع',
   aleff: 'ا',
+  bb: 'ب',
   haa: 'ح',
+  khaa: 'خ',
   dal: 'د',
+  thal: 'ذ',
+  ra: 'ر',
+  zay: 'ز',
+  seen: 'س',
+  sheen: 'ش',
   saad: 'ص',
+  dhad: 'ض',
+  ta: 'ط',
+  dha: 'ظ',
+  ghain: 'غ',
   fa: 'ف',
   gaaf: 'ق',
   kaaf: 'ك',
@@ -22,5 +35,10 @@ export const VERIFIED_ARABIC_SIGN_LABELS: Partial<Record<ArabicSignModelLabel, s
   nun: 'ن',
   ha: 'ه',
   waw: 'و',
+  ya: 'ئ',
   yaa: 'ي',
+  jeem: 'ج',
+  thaa: 'ث',
+  taa: 'ت',
+  toot: 'ة',
 };

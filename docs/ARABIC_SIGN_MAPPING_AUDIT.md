@@ -24,15 +24,32 @@ ta, taa, thaa, thal, toot, waw, ya, yaa, zay
 
 ## Verified local map
 
-The following are the only raw-label-to-character mappings permitted by the
-current verified table:
+The following raw-label-to-character mappings are permitted by the current
+verified table. The upstream encoder has the same named 32 sign classes as the
+published ArASL class list; its independent digits and `space` remain outside
+this mapping.
 
 | Raw class | Arabic character |
 |---|---|
 | `aleff` | ا |
+| `bb` | ب |
+| `taa` | ت |
+| `thaa` | ث |
+| `jeem` | ج |
 | `haa` | ح |
+| `khaa` | خ |
 | `dal` | د |
+| `thal` | ذ |
+| `ra` | ر |
+| `zay` | ز |
+| `seen` | س |
+| `sheen` | ش |
 | `saad` | ص |
+| `dhad` | ض |
+| `ta` | ط |
+| `dha` | ظ |
+| `ain` | ع |
+| `ghain` | غ |
 | `fa` | ف |
 | `gaaf` | ق |
 | `kaaf` | ك |
@@ -41,7 +58,9 @@ current verified table:
 | `nun` | ن |
 | `ha` | ه |
 | `waw` | و |
+| `ya` | ئ |
 | `yaa` | ي |
+| `toot` | ة |
 
 The 11 digit classes and `space` are non-letter classes and are never mapped to
 Quranic letters.
@@ -50,21 +69,22 @@ Quranic letters.
 
 The KFGQPC display field uses private-use glyphs and is never normalized for
 machine comparison. The separate non-displayed Emlaey field contains 32 unique
-normalized Arabic characters. The 13 mappings above cover 13/32.
+normalized Arabic characters. The verified single-character mappings now cover
+30/32 (including `ئ` and `ة`). The compound `al` class is deliberately not
+used by character-by-character comparison.
 
-The remaining 19 characters are deliberately unresolved:
+The remaining two characters are deliberately unresolved:
 
 ```text
-ء ب ة ت ث ج خ ذ ر ز س ش ض ط ظ ع غ ؤ ئ
+ء ؤ
 ```
 
-Likely-looking raw names such as `bb`, `ta`, `taa`, `thaa`, `jeem`, `khaa`,
-`seen`, `sheen`, `dhad`, `toot`, `thal`, `ain`, and `ghain` remain unresolved
-until an authoritative class-to-Arabic artifact from the model training source
-or a reviewed expert mapping verifies each one. `al`, `dha`, `ha`, and `ya` are
-also unresolved because their distinction from Arabic orthographic variants is
-not established by the encoder label alone.
+`al` is a compound "ال" sign rather than one Arabic character, so it remains
+outside the character-by-character target vocabulary. The model has no direct
+class for standalone hamza or waw-with-hamza. The app does not normalize either
+to another character for comparison.
 
 Consequently, dynamically generated practice targets are available only for
-ayahs whose internal, normalized Emlaey comparison target uses all and only the
-13 verified characters. The UI never silently substitutes an unresolved class.
+ayahs whose internal, normalized Emlaey comparison target excludes `ء` and `ؤ`.
+The UI never silently substitutes an unresolved class. With the supplied 6,236
+records, the resulting coverage is 4,610 ayahs (73.9256%) across all 114 surahs.

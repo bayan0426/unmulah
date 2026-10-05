@@ -13,7 +13,8 @@ describe('Quran-wide recitation coverage audit', () => {
       normalizedText: 'قلهواللهاحد',
       expectedRawLabels: ['gaaf', 'laam', 'ha', 'waw', 'aleff', 'laam', 'laam', 'ha', 'aleff', 'haa', 'dal'],
     });
-    expect(createVerifiedRecitationTarget('ب')).toBeNull();
+    expect(createVerifiedRecitationTarget('ب')).toEqual({ normalizedText: 'ب', expectedRawLabels: ['bb'] });
+    expect(createVerifiedRecitationTarget('ؤ')).toBeNull();
   });
 
   it('reports KFGQPC private-use display glyphs as an explicit target-generation blocker', () => {
@@ -45,6 +46,6 @@ describe('Quran-wide recitation coverage audit', () => {
     unsupported.aya_no = 2;
     unsupported.aya_text_emlaey = 'ب';
     const audit = auditKfgqpcSmartCoverage([supported, unsupported]);
-    expect(audit.emlaey).toMatchObject({ mappedCharacters: ['ا'], unmappedCharacters: ['ب'], fullySupportedAyahs: 1, fullySupportedPercentage: .5, fullySupportedSurahNumbers: [1] });
+    expect(audit.emlaey).toMatchObject({ mappedCharacters: ['ا', 'ب'], unmappedCharacters: [], fullySupportedAyahs: 2, fullySupportedPercentage: 1, fullySupportedSurahNumbers: [1] });
   });
 });

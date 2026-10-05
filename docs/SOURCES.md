@@ -95,6 +95,11 @@ KFGQPC viewing modes and from fingerspelling.
 - The strict verified/unresolved mapping boundary is recorded in
   [`ARABIC_SIGN_MAPPING_AUDIT.md`](ARABIC_SIGN_MAPPING_AUDIT.md). It avoids
   treating raw English label names as proof of Arabic-letter identity.
+- **ArASL Database Grayscale** — [dataset card](https://huggingface.co/datasets/pain/ArASL_Database_Grayscale/blob/main/README.md), CC BY 4.0.
+  Its documented 32-class names match the alphabet-class portion of the model
+  encoder. The archived [class table](https://github.com/tariqshaban/arabic-sign-language-image-classification)
+  provides the Arabic counterpart for each label and is used only to verify the
+  local mapping, not to ship dataset images.
 
 Camera frames, landmark processing, model inference, and deterministic
 comparison remain in the browser. The current MVP does not upload or record
