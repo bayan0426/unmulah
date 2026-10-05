@@ -33,20 +33,44 @@ third-party mirror itself is an official Complex service.
 
 No tafsir or translation text is included in the application.
 
-## Product Polish status
+## Official KFGQPC Hafs Smart v0.8 — interactive smart text
 
-The Quran browser contains the complete, local catalogue of 114 surah names and
-ayah counts. It deliberately contains no Quran text other than the documented
-Surah Al-Ikhlas extract above. During this work, automated access to the
-official developer resource timed out, so the official complete Hafs package
-(including page, line, juz, and ayah metadata) was not downloaded or added.
-Consequently, the UI identifies full-surah reading and Mushaf-page browsing as
-unavailable until that package and its reuse terms can be verified. No
-third-party substitute was added for those features.
+The product owner supplied the local official archive `kfgqpc_hafs_smart_4.zip`.
+The application uses its unedited `hafs_smart_v8.json` and `HafsSmart_08.ttf`:
 
-The Quran browser and the source/privacy page link to the official King Fahd
-Complex developer resource above. The existing local Al-Ikhlas extract retains
-the pinned-mirror provenance and licensing caveat documented in this file.
+- Organization: King Fahd Glorious Quran Printing Complex.
+- Package: KFGQPC Hafs Uthmanic Data for Smart Phone v0.8.
+- Package readme date: 2022-06-30.
+- Runtime record count: exactly 6,236; validation rejects any other count.
+- Fields used: id, juz, surah/ayah numbers and names, page, line start/end,
+  `aya_text`, and `aya_text_emlaey`.
+- JSON SHA-256: `a272a119a4272f10cf42d8e389857b469183d3217fa23aa38b6a7331d0ac4aa2`.
+- Font SHA-256: `18c5641d1a9433499660122eccc6388bf89b9c8b752e5957aff41a2bed2c976b`.
+
+The package readme states that Hafs Smart is for smart-device, ayah-level
+display/search/Tafsir-style applications and is **not** intended to reproduce a
+complete printed Madinah Mushaf page exactly. UNMULAH therefore labels this mode
+`النص العثماني الذكي`. Display uses the supplied font because `aya_text` contains
+the package’s smart-font glyph encoding. `aya_text_emlaey` is used only as a
+search index; search results display the untouched official `aya_text`.
+
+The archive was supplied locally by the owner. Its wider redistribution terms
+still require owner/legal review before a public distribution decision. This is
+separate from the authority and provenance of the supplied content.
+
+## Official Mushaf publication viewer — page view
+
+`مصحف المدينة — عرض الصفحات` uses an iframe shell pointing to the official
+publication viewer: <https://qurancomplex.gov.sa/isdarat-hafs/#flipbook-df_11311/1/>.
+It is a distinct traditional page-view mode. If the official site blocks framing
+through CSP or frame ancestors policy, the app provides an explicit direct-open
+fallback and does not bypass browser security or scrape the viewer.
+
+## Sign Mushaf
+
+No full sign Quran or verified reusable full fingerspelling asset source is
+integrated. `المصحف الإشاري` remains Coming Soon and is intentionally distinct
+from both official KFGQPC viewing modes.
 
 ## Local recognition dependencies
 
