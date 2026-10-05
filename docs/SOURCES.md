@@ -123,8 +123,11 @@ asset record is added.
 
 The official developer page lists a Tafseer Muyassar package and describes it
 as developer content for desktop, mobile, browser applications, and research.
-It was not downloaded or integrated because the app has not recorded the exact
-package download, checksum, and redistribution decision. No Tafsir text is
+It documents JSON/CSV/HTML5/SQL/XML/TXT developer files, `aya_tafseer`, and the
+published checksums MD5 `5601682965e32f4dd6992c7600fdccc3` and SHA-1
+`5f533113c2f54f32eded734bb49e6a5837965722`. The package itself is not present
+in this repository and no verified direct-download artifact was available in
+this session to checksum against that record. No Tafsir text is therefore
 present in the app. See the official [developer platform](https://qurancomplex.gov.sa/en/techquran/dev/).
 
 ## Quran audio
