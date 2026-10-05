@@ -34,6 +34,7 @@ export type ArabicSignPrediction = {
 
 export type ArabicSignInference = {
   prediction: ArabicSignPrediction;
+  probabilities: Float32Array;
   outputLength: number;
   predictedIndex: number;
   probabilitySum: number;
@@ -182,6 +183,7 @@ export class ArabicSignClassifier {
         arabicLabel: VERIFIED_ARABIC_SIGN_LABELS[rawLabel],
         confidence: probabilities[classIndex],
       },
+      probabilities,
       outputLength: probabilities.length,
       predictedIndex: classIndex,
       probabilitySum: probabilities.reduce((sum, value) => sum + value, 0),

@@ -1,6 +1,14 @@
-import { useCallback, useEffect, useState, type MouseEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
 import { HandTrackingCamera, type AcceptedArabicSign } from './components/HandTrackingCamera';
 import { quranSource } from './data/surahAlIkhlas';
+import {
+  RECITATION_TARGETS,
+  allowedRawLabelsForTarget,
+  compareAlIkhlasRecitation,
+  getRecitationTarget,
+  type RecitationComparison,
+  type RecitationTargetId,
+} from './lib/recitationComparison';
 
 type Route = '/' | '/quran' | '/surah/al-ikhlas' | '/practice/al-ikhlas';
 const REVIEW_KEY = 'unmulah.reviewed.al-ikhlas';
@@ -185,16 +193,34 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
   const [recognizedSequence, setRecognizedSequence] = useState<AcceptedArabicSign[]>([]);
   const [acceptanceResetKey, setAcceptanceResetKey] = useState(0);
   const [attemptFinished, setAttemptFinished] = useState(false);
+  const [targetId, setTargetId] = useState<RecitationTargetId>('ayah-1');
+  const [comparisonResult, setComparisonResult] = useState<RecitationComparison | null>(null);
+  const selectedTarget = getRecitationTarget(targetId);
+  const allowedRawLabels = useMemo(() => allowedRawLabelsForTarget(targetId), [targetId]);
   const onAcceptedLetter = useCallback((prediction: AcceptedArabicSign) => {
     setRecognizedSequence((sequence) => [...sequence, prediction]);
   }, []);
   const retry = () => {
     setRecognizedSequence([]);
     setAttemptFinished(false);
+    setComparisonResult(null);
     setAcceptanceResetKey((key) => key + 1);
   };
   const undo = () => {
     setRecognizedSequence((sequence) => sequence.slice(0, -1));
+    if (attemptFinished) {
+      setAttemptFinished(false);
+      setComparisonResult(null);
+    }
+  };
+  const finishAttempt = () => {
+    setComparisonResult(compareAlIkhlasRecitation(recognizedSequence, targetId));
+    setAttemptFinished(true);
+  };
+  const selectTarget = (nextTargetId: RecitationTargetId) => {
+    setTargetId(nextTargetId);
+    setComparisonResult(null);
+    setAcceptanceResetKey((key) => key + 1);
   };
 
   return (
@@ -211,6 +237,17 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
             <div><h2>النص مخفي — خذ وقتك</h2><p>تعمل معاينة اليد محليًا داخل المتصفح بعد موافقتك.</p></div>
             <span className="inactive-tag">تتبّع اليد محليًا</span>
           </div>
+          <section className="target-selector" aria-label="هدف التسميع">
+            <div><strong>هدف التسميع: {selectedTarget.label}</strong><span>مرجع مطبّع من النص المعروض · {selectedTarget.normalized.length} حرفًا</span></div>
+            <select
+              value={targetId}
+              onChange={(event) => selectTarget(event.target.value as RecitationTargetId)}
+              disabled={recognizedSequence.length > 0 || attemptFinished}
+              aria-label="اختر هدف التسميع"
+            >
+              {RECITATION_TARGETS.map((target) => <option value={target.id} key={target.id}>{target.label}</option>)}
+            </select>
+          </section>
           <div className="practice-grid">
             <section className="practice-card camera-card">
               <h3>مساحة الكاميرا</h3>
@@ -219,6 +256,7 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
                 onAcceptedLetter={onAcceptedLetter}
                 acceptanceResetKey={acceptanceResetKey}
                 acceptanceEnabled={!attemptFinished}
+                allowedRawLabels={allowedRawLabels}
               />
             </section>
             <section className="practice-card transcript-card">
@@ -231,7 +269,7 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
             </section>
             <section className="practice-card sequence-card">
               <h3>التسلسل المتعرّف عليه</h3>
-              <p>تُضاف الإشارات الثابتة تلقائيًا داخل هذه الجلسة فقط. لا توجد مقارنة للنص في هذه المرحلة.</p>
+              <p>تُضاف الإشارات الثابتة تلقائيًا بعد رفع اليد، ثم تُقارن بمرجع {selectedTarget.label} عند إنهاء التسميع.</p>
               <div className="sequence-slots" aria-label="التسلسل المتعرّف عليه">
                 {recognizedSequence.length === 0 ? (
                   <span className="sequence-slot" aria-label="لا توجد إشارات مقبولة">—</span>
@@ -243,12 +281,32 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
               </div>
             </section>
           </div>
+          {comparisonResult && (
+            <section className="practice-card comparison-card" aria-live="polite">
+              <h3>نتيجة التسميع · {comparisonResult.targetLabel}</h3>
+              <div className="comparison-summary">
+                <div><span>صحيح</span><strong>{comparisonResult.correct}</strong></div>
+                <div><span>ناقص</span><strong>{comparisonResult.missing}</strong></div>
+                <div><span>زائد</span><strong>{comparisonResult.extra}</strong></div>
+                <div><span>مستبدل</span><strong>{comparisonResult.substitutions}</strong></div>
+                <div><span>إجمالي الحروف المتعرّف عليها</span><strong>{comparisonResult.totalRecognizedLetters}</strong></div>
+                <div><span>نسبة تطابق المحاولة مع المرجع</span><strong>{(comparisonResult.accuracy * 100).toFixed(1)}%</strong></div>
+              </div>
+              <div className="comparison-debug">
+                <div><span>التسلسل المتعرّف عليه</span><b dir="rtl">{comparisonResult.recognizedDebugSequence || '—'}</b></div>
+                <div><span>التسلسل المرجعي المطبّع</span><b dir="rtl">{comparisonResult.expectedNormalized}</b></div>
+                {comparisonResult.unresolved.length > 0 && (
+                  <div><span>فئات غير محسومة</span><b dir="ltr">{comparisonResult.unresolved.map((item) => item.rawLabel).join(', ')}</b></div>
+                )}
+              </div>
+            </section>
+          )}
           <div className="future-controls" aria-label="عناصر تحكم الإشارة الثابتة">
             <button type="button" onClick={retry} disabled={recognizedSequence.length === 0 && !attemptFinished}>إعادة المحاولة</button>
             <button type="button" onClick={undo} disabled={recognizedSequence.length === 0}>تراجع</button>
-            <button type="button" onClick={() => setAttemptFinished(true)} disabled={recognizedSequence.length === 0 || attemptFinished}>إنهاء التسميع</button>
+            <button type="button" onClick={finishAttempt} disabled={recognizedSequence.length === 0 || attemptFinished}>إنهاء التسميع</button>
           </div>
-          <div className="phase-note">تعمل المعالجة والاستدلال محليًا في المتصفح. تُضاف الإشارة الثابتة تلقائيًا إلى التسلسل، ولا يُعاد قبول الإشارة نفسها حتى تُرفع اليد أو تُثبت إشارة مختلفة. لا توجد مقارنة للقرآن أو حفظ للتسميع في هذه المرحلة.</div>
+          <div className="phase-note">تعمل المعالجة والاستدلال والمقارنة محليًا في المتصفح. تُضاف الإشارة الثابتة تلقائيًا إلى التسلسل، ولا يُعاد قبول الإشارة نفسها حتى تُرفع اليد أو تُثبت إشارة مختلفة. لا يوجد حفظ للتسميع في هذه المرحلة.</div>
           <div className="review-toggle">
             <div><strong>هل انتهيت من مراجعتك؟</strong><span>تسجيل يدوي بسيط يُحفظ على هذا الجهاز فقط.</span></div>
             <button type="button" onClick={() => setReviewed(!reviewed)} aria-pressed={reviewed}>{reviewed ? 'إلغاء تسجيل المراجعة' : 'سجّلت مراجعتي'}</button>

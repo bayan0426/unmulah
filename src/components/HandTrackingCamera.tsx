@@ -1,6 +1,22 @@
 import { HandLandmarker, FilesetResolver } from '@mediapipe/tasks-vision';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { ArabicSignClassifier, type ArabicSignPrediction } from '../lib/ArabicSignClassifier';
+import { type ArabicSignModelLabel } from '../data/arabicSignLabels';
+import {
+  CONSTRAINED_CANDIDATE_MIN_CONFIDENCE,
+  inspectReferenceConstrainedCandidate,
+  selectReferenceConstrainedCandidate,
+  stabilizedConstrainedCandidate,
+  type ConstrainedCandidateDiagnostics,
+  type ConstrainedPrediction,
+} from '../lib/referenceConstrainedDecoding';
+import {
+  EMPTY_SEGMENTATION_STATE,
+  observeHand,
+  observeNoHand,
+  setStableCandidate,
+  type SequenceCandidate,
+} from '../lib/sequenceSegmentation';
 
 type CameraState = 'idle' | 'preparing' | 'no-hand' | 'hand-detected' | 'permission-denied' | 'error';
 type ClassifierState = 'idle' | 'loading' | 'ready' | 'error';
@@ -10,14 +26,8 @@ type PreprocessingDiagnostic = {
   rawLabel: string;
   confidence: number;
 };
-export type AcceptedArabicSign = Omit<ArabicSignPrediction, 'arabicLabel'> & {
-  rawLabel: string;
-  arabicLabel: string | null;
-  supportingFrames: number;
-  timestamp: number;
-};
-type StabilityState = 'waiting' | 'verifying' | 'stable';
-type FramePrediction = ArabicSignPrediction;
+export type AcceptedArabicSign = SequenceCandidate;
+type StabilityState = 'waiting' | 'verifying' | 'stable' | 'unclear';
 type IntegrationDiagnostics = {
   loadStatus: string;
   loadError: string | null;
@@ -35,9 +45,6 @@ type IntegrationDiagnostics = {
 const WASM_PATH = '/mediapipe/wasm';
 const MODEL_PATH = '/mediapipe/models/hand_landmarker.task';
 const CLASSIFIER_LOAD_TIMEOUT_MS = 15_000;
-const STABILITY_WINDOW_SIZE = 12;
-const STABILITY_MIN_DOMINANT_FRAMES = 9;
-const RELEASE_FRAME_COUNT = 5;
 const EMPTY_DIAGNOSTICS: IntegrationDiagnostics = {
   loadStatus: 'لم يبدأ',
   loadError: null,
@@ -219,36 +226,16 @@ function preprocessingVariants(landmarks: HandLandmark[]): Array<{ name: string;
   ];
 }
 
-function dominantPrediction(window: FramePrediction[]): { prediction: ArabicSignPrediction; count: number; confidence: number } | null {
-  if (window.length === 0) return null;
-
-  const groups = new Map<string, FramePrediction[]>();
-  for (const prediction of window) {
-    const group = groups.get(prediction.rawLabel) ?? [];
-    group.push(prediction);
-    groups.set(prediction.rawLabel, group);
-  }
-
-  let dominant: FramePrediction[] = [];
-  for (const group of groups.values()) {
-    if (group.length > dominant.length) dominant = group;
-  }
-  const latest = dominant[dominant.length - 1];
-  return {
-    prediction: latest,
-    count: dominant.length,
-    confidence: dominant.reduce((sum, item) => sum + item.confidence, 0) / dominant.length,
-  };
-}
-
 export function HandTrackingCamera({
   onAcceptedLetter,
   acceptanceResetKey = 0,
   acceptanceEnabled = true,
+  allowedRawLabels,
 }: {
   onAcceptedLetter?: (prediction: AcceptedArabicSign) => void;
   acceptanceResetKey?: number;
   acceptanceEnabled?: boolean;
+  allowedRawLabels: readonly ArabicSignModelLabel[];
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -261,10 +248,10 @@ export function HandTrackingCamera({
   const runIdRef = useRef(0);
   const startingRef = useRef(false);
   const mountedRef = useRef(true);
-  const predictionWindowRef = useRef<FramePrediction[]>([]);
-  const acceptedLabelRef = useRef<string | null>(null);
-  const noHandFramesRef = useRef(0);
+  const constrainedWindowRef = useRef<ConstrainedPrediction[]>([]);
+  const segmentationRef = useRef(EMPTY_SEGMENTATION_STATE);
   const acceptanceEnabledRef = useRef(acceptanceEnabled);
+  const allowedRawLabelsRef = useRef(allowedRawLabels);
   const [state, setState] = useState<CameraState>('idle');
   const [classifierState, setClassifierState] = useState<ClassifierState>('idle');
   const [prediction, setPrediction] = useState<ArabicSignPrediction | null>(null);
@@ -272,15 +259,22 @@ export function HandTrackingCamera({
   const [diagnostics, setDiagnostics] = useState<IntegrationDiagnostics>(EMPTY_DIAGNOSTICS);
   const [preprocessingDiagnostics, setPreprocessingDiagnostics] = useState<PreprocessingDiagnostic[]>([]);
   const [stabilityState, setStabilityState] = useState<StabilityState>('waiting');
-  const [stablePrediction, setStablePrediction] = useState<AcceptedArabicSign | null>(null);
+  const [candidate, setCandidate] = useState<SequenceCandidate | null>(null);
+  const [stableCount, setStableCount] = useState(0);
+  const [releaseFrameCount, setReleaseFrameCount] = useState(0);
+  const [committedSequenceLength, setCommittedSequenceLength] = useState(0);
+  const [constrainedDiagnostics, setConstrainedDiagnostics] = useState<ConstrainedCandidateDiagnostics | null>(null);
 
   const resetAcceptance = useCallback(() => {
-    predictionWindowRef.current = [];
-    acceptedLabelRef.current = null;
-    noHandFramesRef.current = 0;
+    constrainedWindowRef.current = [];
+    segmentationRef.current = EMPTY_SEGMENTATION_STATE;
     if (mountedRef.current) {
       setStabilityState('waiting');
-      setStablePrediction(null);
+      setCandidate(null);
+      setStableCount(0);
+      setReleaseFrameCount(0);
+      setCommittedSequenceLength(0);
+      setConstrainedDiagnostics(null);
     }
   }, []);
 
@@ -292,6 +286,10 @@ export function HandTrackingCamera({
     acceptanceEnabledRef.current = acceptanceEnabled;
     if (!acceptanceEnabled) resetAcceptance();
   }, [acceptanceEnabled, resetAcceptance]);
+
+  useEffect(() => {
+    allowedRawLabelsRef.current = allowedRawLabels;
+  }, [allowedRawLabels]);
 
   const stopCamera = useCallback(() => {
     runIdRef.current += 1;
@@ -308,9 +306,8 @@ export function HandTrackingCamera({
     landmarkerRef.current = null;
     clearCanvas(canvasRef.current);
     inferenceCallCountRef.current = 0;
-    predictionWindowRef.current = [];
-    acceptedLabelRef.current = null;
-    noHandFramesRef.current = 0;
+    constrainedWindowRef.current = [];
+    segmentationRef.current = EMPTY_SEGMENTATION_STATE;
     if (mountedRef.current) {
       setState('idle');
       setPrediction(null);
@@ -318,7 +315,11 @@ export function HandTrackingCamera({
       setDiagnostics({ ...EMPTY_DIAGNOSTICS, classifierReady: Boolean(classifierRef.current) });
       setPreprocessingDiagnostics([]);
       setStabilityState('waiting');
-      setStablePrediction(null);
+      setCandidate(null);
+      setStableCount(0);
+      setReleaseFrameCount(0);
+      setCommittedSequenceLength(0);
+      setConstrainedDiagnostics(null);
     }
   }, []);
 
@@ -498,36 +499,52 @@ export function HandTrackingCamera({
                   inferenceCallCountRef.current += 1;
                   setPrediction(inference.prediction);
                   setPreprocessingDiagnostics(variants);
-                  noHandFramesRef.current = 0;
                   if (acceptanceEnabledRef.current) {
-                    predictionWindowRef.current = [
-                      ...predictionWindowRef.current,
-                      inference.prediction,
-                    ].slice(-STABILITY_WINDOW_SIZE);
-                    const dominant = dominantPrediction(predictionWindowRef.current);
-                    if (dominant && predictionWindowRef.current.length >= STABILITY_WINDOW_SIZE
-                      && dominant.count >= STABILITY_MIN_DOMINANT_FRAMES) {
-                      if (acceptedLabelRef.current !== dominant.prediction.rawLabel) {
-                        const accepted: AcceptedArabicSign = {
-                          ...dominant.prediction,
-                          arabicLabel: dominant.prediction.arabicLabel ?? null,
-                          confidence: dominant.confidence,
-                          supportingFrames: dominant.count,
+                    segmentationRef.current = observeHand(segmentationRef.current);
+                    setReleaseFrameCount(segmentationRef.current.releaseFrameCount);
+                    const constrainedDetails = inspectReferenceConstrainedCandidate(
+                      inference.probabilities,
+                      allowedRawLabelsRef.current,
+                    );
+                    setConstrainedDiagnostics(constrainedDetails);
+                    const constrained = selectReferenceConstrainedCandidate(
+                      inference.probabilities,
+                      allowedRawLabelsRef.current,
+                    );
+                    if (constrained) {
+                      constrainedWindowRef.current = [...constrainedWindowRef.current, constrained].slice(-12);
+                      const stable = stabilizedConstrainedCandidate(constrainedWindowRef.current);
+                      if (stable) {
+                        setStableCount(stable.count);
+                        if (segmentationRef.current.candidate?.rawLabel !== stable.rawLabel) {
+                        const nextCandidate: SequenceCandidate = {
+                          rawLabel: stable.rawLabel,
+                          arabicLabel: stable.arabicLabel,
+                          confidence: stable.averageConfidence,
+                          supportingFrames: stable.count,
                           timestamp: Date.now(),
                         };
-                        acceptedLabelRef.current = accepted.rawLabel;
-                        setStablePrediction(accepted);
+                        segmentationRef.current = setStableCandidate(segmentationRef.current, nextCandidate);
+                        setCandidate(nextCandidate);
+                        setReleaseFrameCount(0);
+                        console.log('[HandTrackingCamera] stable candidate replaced', nextCandidate);
+                        }
                         setStabilityState('stable');
-                        onAcceptedLetter?.(accepted);
-                        console.log('[HandTrackingCamera] stable letter accepted', accepted);
                       } else {
-                        setStabilityState('stable');
+                        setStableCount(constrainedWindowRef.current.filter((item) => item.rawLabel === constrained.rawLabel).length);
+                        setStabilityState('verifying');
                       }
                     } else {
-                      setStabilityState('verifying');
+                      constrainedWindowRef.current = [];
+                      setStableCount(0);
+                      setStabilityState('unclear');
                     }
                   } else {
-                    predictionWindowRef.current = [];
+                    constrainedWindowRef.current = [];
+                    segmentationRef.current = EMPTY_SEGMENTATION_STATE;
+                    setCandidate(null);
+                    setStableCount(0);
+                    setReleaseFrameCount(0);
                     setStabilityState('waiting');
                   }
                   setDiagnostics((current) => ({
@@ -559,10 +576,18 @@ export function HandTrackingCamera({
               setHandedness(null);
               setDiagnostics((current) => ({ ...current, handDetected: false, landmarkCount }));
               setPreprocessingDiagnostics([]);
-              predictionWindowRef.current = [];
-              noHandFramesRef.current += 1;
-              if (noHandFramesRef.current >= RELEASE_FRAME_COUNT) {
-                acceptedLabelRef.current = null;
+              constrainedWindowRef.current = [];
+              if (acceptanceEnabledRef.current) {
+                const release = observeNoHand(segmentationRef.current);
+                segmentationRef.current = release.state;
+                setCandidate(release.state.candidate);
+                setStableCount(release.state.candidate?.supportingFrames ?? 0);
+                setReleaseFrameCount(release.state.releaseFrameCount);
+                setCommittedSequenceLength(release.state.committedCount);
+                if (release.committed) {
+                  onAcceptedLetter?.(release.committed);
+                  console.log('[HandTrackingCamera] candidate committed after hand release', release.committed);
+                }
               }
               setStabilityState('waiting');
             }
@@ -606,13 +631,15 @@ export function HandTrackingCamera({
       <div className={`camera-status is-${state}`} role="status">{statusText(state)}</div>
       {state === 'hand-detected' && <div className="landmark-count">٢١ نقطة مرسومة فوق المعاينة</div>}
       <section className="stable-prediction" aria-live="polite">
-        {stabilityState === 'stable' && stablePrediction ? (
+        {candidate ? (
           <>
-            <strong>فهمت الإشارة: {stablePrediction.arabicLabel ?? stablePrediction.rawLabel}</strong>
-            <span>الثقة الفعلية: {(stablePrediction.confidence * 100).toFixed(1)}% · {stablePrediction.supportingFrames} من {STABILITY_WINDOW_SIZE} إطارًا متفقًا</span>
+            <strong>فهمت الإشارة: {candidate.arabicLabel ?? candidate.rawLabel}</strong>
+            <span>ارفع يدك قليلًا لتثبيت الحرف</span>
           </>
         ) : stabilityState === 'verifying' ? (
           <strong>جارٍ التحقق من الإشارة…</strong>
+        ) : stabilityState === 'unclear' ? (
+          <strong>الإشارة غير واضحة، حاول مرة أخرى</strong>
         ) : (
           <strong>بانتظار إشارة ثابتة</strong>
         )}
@@ -635,6 +662,18 @@ export function HandTrackingCamera({
         <div><span>آخر فئة خام</span><b dir="ltr">{diagnostics.lastRawLabel ?? '—'}</b></div>
         <div><span>آخر ثقة</span><b dir="ltr">{diagnostics.lastConfidence === null ? '—' : `${(diagnostics.lastConfidence * 100).toFixed(4)}%`}</b></div>
         <div><span>اختبار المصنّف</span><b dir="ltr">{diagnostics.selfTest ? `43 / finite=${diagnostics.selfTest.allFinite} / sum=${diagnostics.selfTest.probabilitySum.toFixed(6)}` : '—'}</b></div>
+        <div><span>فئة المرشح</span><b dir="ltr">{candidate?.rawLabel ?? '—'}</b></div>
+        <div><span>حرف المرشح</span><b>{candidate?.arabicLabel ?? '—'}</b></div>
+        <div><span>ثقة المرشح</span><b dir="ltr">{candidate ? `${(candidate.confidence * 100).toFixed(1)}%` : '—'}</b></div>
+        <div><span>عدد الإطارات المتفقة</span><b dir="ltr">{stableCount}</b></div>
+        <div><span>إطارات رفع اليد</span><b dir="ltr">{releaseFrameCount}</b></div>
+        <div><span>طول التسلسل المثبّت</span><b dir="ltr">{committedSequenceLength}</b></div>
+        <div><span>فئة الهدف المقيّدة</span><b dir="ltr">{constrainedDiagnostics?.rawLabel ?? '—'}</b></div>
+        <div><span>احتمال الهدف الأصلي</span><b dir="ltr">{constrainedDiagnostics ? `${(constrainedDiagnostics.confidence * 100).toFixed(2)}%` : '—'}</b></div>
+        <div><span>ثاني احتمال مسموح</span><b dir="ltr">{constrainedDiagnostics ? `${(constrainedDiagnostics.secondBestAllowedConfidence * 100).toFixed(2)}%` : '—'}</b></div>
+        <div><span>هامش الاحتمال المسموح</span><b dir="ltr">{constrainedDiagnostics ? `${(constrainedDiagnostics.margin * 100).toFixed(2)}%` : '—'}</b></div>
+        <div><span>حد احتمال المرشح</span><b dir="ltr">{(CONSTRAINED_CANDIDATE_MIN_CONFIDENCE * 100).toFixed(0)}%</b></div>
+        <div><span>الفئات الخام المسموحة</span><b dir="ltr">{allowedRawLabels.join(', ')}</b></div>
       </section>
       <section className="prediction-debug preprocessing-diagnostics" aria-label="تشخيص المعالجة المسبقة المؤقت" aria-live="polite">
         <strong>تشخيص المعالجة المسبقة المؤقت</strong>

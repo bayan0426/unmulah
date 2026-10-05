@@ -8,10 +8,19 @@ export const ARABIC_SIGN_MODEL_LABELS = [
 
 export type ArabicSignModelLabel = (typeof ARABIC_SIGN_MODEL_LABELS)[number];
 
-// These four mappings are verified against the ArASL dataset mapping.
+// Verified against the ArASL class mapping; only verified mappings are exposed to the UI.
 export const VERIFIED_ARABIC_SIGN_LABELS: Partial<Record<ArabicSignModelLabel, string>> = {
   aleff: 'ا',
+  haa: 'ح',
+  dal: 'د',
+  saad: 'ص',
+  fa: 'ف',
+  gaaf: 'ق',
+  kaaf: 'ك',
+  laam: 'ل',
   meem: 'م',
   nun: 'ن',
+  ha: 'ه',
   waw: 'و',
+  yaa: 'ي',
 };
