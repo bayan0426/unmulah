@@ -134,18 +134,17 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas, onOpenRecog
       {results.length === 0 && <p>لا توجد نتائج مطابقة.</p>}
     </div>}
 
-    <div className={`smart-ayah-list reader-font-${readerSettings.fontScale} reader-spacing-${readerSettings.lineSpacing}`} aria-label={`آيات سورة ${surah.name}`}>
+    <main className={`quran-reading-canvas reader-font-${readerSettings.fontScale} reader-spacing-${readerSettings.lineSpacing}`} aria-label={`???? ???? ${surah.name}`}>
+      <div className="reading-canvas-rule" aria-hidden="true" />
       {surah.ayahs.map((ayah) => {
         const record = recordByAyah.get(ayah.ayahNumber);
-        return <button type="button" key={ayah.ayahNumber} className={`smart-ayah-card${selectedAyah === ayah.ayahNumber ? ' is-selected' : ''}${activeAyah === ayah.ayahNumber ? ' is-playing' : ''}`} onClick={() => {
-          setSelectedAyah(ayah.ayahNumber);
-          if (record) setActionAyah(record);
-        }}>
-          <div className="smart-ayah-meta"><span>الآية {ayah.ayahNumber}</span><span>الجزء {ayah.juz} · صفحة {ayah.page}</span></div>
-          <p className="smart-ayah" lang="ar">{ayah.text}</p><small>اضغط لخيارات الآية</small>
-        </button>;
+        return <article key={ayah.ayahNumber} className={`reading-ayah${selectedAyah === ayah.ayahNumber ? ' is-selected' : ''}${activeAyah === ayah.ayahNumber ? ' is-playing' : ''}`}>
+          <button type="button" className="reading-ayah-trigger" onClick={() => { setSelectedAyah(ayah.ayahNumber); if (record) setActionAyah(record); }} aria-label={`?????? ????? ${ayah.ayahNumber}`}><span className="ayah-number-mark">{ayah.ayahNumber}</span><span className="reading-ayah-text smart-ayah" lang="ar">{ayah.text}</span></button>
+          <span className="reading-ayah-meta">????? {ayah.juz} ? ???? {ayah.page}</span>
+        </article>;
       })}
-    </div>
+      <div className="reading-canvas-rule" aria-hidden="true" />
+    </main>
     <p className="smart-source-note">المصدر: بيانات حفص الذكية v0.8 من مجمع الملك فهد. هذا العرض على مستوى الآية، وليس محاكاة مطابقة لصفحة مصحف مطبوع.</p>
 
     {actionAyah && <div className="ayah-sheet-backdrop" role="presentation" onClick={() => setActionAyah(null)}>

@@ -35,7 +35,7 @@ test('official smart Quran loads all key Surah endpoints and search metadata', a
   for (const value of ['2', '112', '114'] as const) {
     await selector.selectOption(value);
     await expect(selector).toHaveValue(value);
-    await expect(page.locator('.smart-ayah-card').first()).toBeVisible();
+    await expect(page.locator('.reading-ayah-trigger').first()).toBeVisible();
   }
   const QuranSearch = page.getByRole('textbox', { name: 'ابحث في القرآن' });
   await QuranSearch.fill('بسم الله');
@@ -48,7 +48,7 @@ test('smart Quran ayah actions are contextual and do not claim unavailable conte
   await page.locator('.reader-mode-launcher button').nth(1).click();
   await expect(page.locator('.quran-audio-player')).toBeVisible();
   await page.getByRole('combobox', { name: 'اختر سورة' }).selectOption('112');
-  await page.locator('.smart-ayah-card').first().click();
+  await page.locator('.reading-ayah-trigger').first().click();
   await expect(page.getByRole('dialog', { name: /خيارات الآية 1/ })).toBeVisible();
   await expect(page.getByRole('button', { name: 'حفظ الآية' })).toBeVisible();
   await page.getByRole('dialog', { name: /خيارات الآية 1/ }).getByRole('button', { name: 'ابدأ التسميع' }).click();
@@ -57,7 +57,7 @@ test('smart Quran ayah actions are contextual and do not claim unavailable conte
   await page.reload();
   await expect(page.getByText(/هدف التسميع:/)).toBeVisible();
   await page.goto('/quran?view=smart');
-  await page.locator('.smart-ayah-card').first().click();
+  await page.locator('.reading-ayah-trigger').first().click();
   await page.getByRole('button', { name: 'إغلاق خيارات الآية' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
 });
@@ -68,7 +68,7 @@ test('local profile, accessibility settings, and saved references are usable', a
   await page.getByRole('combobox', { name: 'حجم النص' }).selectOption('large');
   await page.getByLabel('تباين مرتفع').check();
   await page.goto('/quran?view=smart');
-  await page.locator('.smart-ayah-card').first().click();
+  await page.locator('.reading-ayah-trigger').first().click();
   await page.getByRole('button', { name: 'حفظ الآية' }).click();
   await page.goto('/saved');
   await expect(page.getByRole('heading', { name: 'المحفوظات' })).toBeVisible();
