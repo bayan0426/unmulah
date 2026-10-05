@@ -88,4 +88,6 @@ test('reading, practice, details, sources and sign access render without startin
   await expect(page.getByRole('heading', { name: 'المصادر والخصوصية' })).toBeVisible();
   await page.goto('/accessibility');
   await expect(page.getByRole('heading', { name: 'المصحف بالهجاء الإصبعي' })).toBeVisible();
+  await page.goto('/library');
+  await expect(page.getByRole('heading', { name: 'مكتبة أُنملة' })).toBeVisible();
 });

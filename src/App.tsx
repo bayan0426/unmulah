@@ -4,6 +4,7 @@ import { ErrorBoundary } from './components/ErrorBoundary';
 import { QuranBrowser } from './components/QuranBrowser';
 import { SignAccessPage, SourcesPrivacyPage } from './components/InfoPages';
 import { DataManagementPage, ProfilePage, ProgressPage, SavedContentPage } from './components/ExperiencePages';
+import { LibraryPage } from './components/LibraryPage';
 import type { KfgqpcRecognitionTarget } from './lib/quranCoverageAudit';
 import { readAccessibilitySettings } from './lib/accessibilitySettings';
 import { readLocalProfile, recordLocalActivity } from './lib/localExperience';
@@ -19,7 +20,7 @@ import {
   type RecitationTargetId,
 } from './lib/recitationComparison';
 
-type Route = '/' | '/quran' | '/surah/al-ikhlas' | '/practice/al-ikhlas' | '/practice/ayah' | '/accessibility' | '/sources' | '/profile' | '/progress' | '/saved' | '/data';
+type Route = '/' | '/quran' | '/surah/al-ikhlas' | '/practice/al-ikhlas' | '/practice/ayah' | '/accessibility' | '/sources' | '/profile' | '/progress' | '/saved' | '/data' | '/library';
 const REVIEW_KEY = 'unmulah.reviewed.al-ikhlas';
 const DYNAMIC_TARGET_KEY = 'unmulah.dynamic-recitation-target.v1';
 
@@ -87,6 +88,7 @@ function Header({ navigate, route }: { navigate: (path: Route) => void; route: R
         <AppLink href="/saved" navigate={navigate} current={route === '/saved'}>المحفوظات</AppLink>
         <AppLink href="/profile" navigate={navigate} current={route === '/profile'}>ملفي</AppLink>
         <AppLink href="/data" navigate={navigate} current={route === '/data'}>بياناتي</AppLink>
+        <AppLink href="/library" navigate={navigate} current={route === '/library'}>المكتبة</AppLink>
         <AppLink href="/sources" navigate={navigate} current={route === '/sources'}>المصادر</AppLink>
       </nav>
       <div className="header-quiet"><span className="status-dot" />تعلّم ومراجعة على مهل</div>
@@ -385,7 +387,7 @@ function App() {
       window.history.replaceState({}, '', '/surah/al-ikhlas');
       return '/surah/al-ikhlas';
     }
-    return path === '/quran' || path === '/surah/al-ikhlas' || path === '/practice/ayah' || path === '/accessibility' || path === '/sources' || path === '/profile' || path === '/progress' || path === '/saved' || path === '/data' ? path : '/';
+    return path === '/quran' || path === '/surah/al-ikhlas' || path === '/practice/ayah' || path === '/accessibility' || path === '/sources' || path === '/profile' || path === '/progress' || path === '/saved' || path === '/data' || path === '/library' ? path : '/';
   });
   const [reviewed, setReviewed] = useState(readReviewed);
   const [textHidden, setTextHidden] = useState(false);
@@ -418,7 +420,7 @@ function App() {
   useEffect(() => {
     const onPopState = () => {
       const path = window.location.pathname;
-      setRoute(path === '/quran' || path === '/surah/al-ikhlas' || path === '/practice/al-ikhlas' || path === '/practice/ayah' || path === '/accessibility' || path === '/sources' || path === '/profile' || path === '/progress' || path === '/saved' || path === '/data' ? path : '/');
+      setRoute(path === '/quran' || path === '/surah/al-ikhlas' || path === '/practice/al-ikhlas' || path === '/practice/ayah' || path === '/accessibility' || path === '/sources' || path === '/profile' || path === '/progress' || path === '/saved' || path === '/data' || path === '/library' ? path : '/');
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
@@ -438,6 +440,7 @@ function App() {
       {route === '/progress' && <><ProgressPage attempts={readAttemptHistory()} reviewed={reviewed} /><Footer /></>}
       {route === '/saved' && <><SavedContentPage onOpenQuran={() => navigate('/quran')} /><Footer /></>}
       {route === '/data' && <><DataManagementPage /><Footer /></>}
+      {route === '/library' && <><LibraryPage /><Footer /></>}
       {route === '/sources' && <><SourcesPrivacyPage /><Footer /></>}
     </div></ErrorBoundary>
   );

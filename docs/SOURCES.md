@@ -125,10 +125,14 @@ The official developer page lists a Tafseer Muyassar package and describes it
 as developer content for desktop, mobile, browser applications, and research.
 It documents JSON/CSV/HTML5/SQL/XML/TXT developer files, `aya_tafseer`, and the
 published checksums MD5 `5601682965e32f4dd6992c7600fdccc3` and SHA-1
-`5f533113c2f54f32eded734bb49e6a5837965722`. The package itself is not present
-in this repository and no verified direct-download artifact was available in
-this session to checksum against that record. No Tafsir text is therefore
-present in the app. See the official [developer platform](https://qurancomplex.gov.sa/en/techquran/dev/).
+`5f533113c2f54f32eded734bb49e6a5837965722`. On 2026-10-05 the official live
+download `hafs_tafseerMouaser_v3.zip` was retrieved only to a temporary folder.
+It contained CSV/HTML/SQL/TXT/XLSX/XML and the documented fonts, but no JSON;
+its actual MD5 was `B38703983D438A5CD22269B746EAAC0C`, which does not match the
+published checksum. It was therefore not copied into this repository and no
+Tafsir text is present in the app. The source must publish a matching checksum
+or an explicit updated hash before integration. See the official
+[developer platform](https://qurancomplex.gov.sa/quran-dev/).
 
 ## Quran audio
 
