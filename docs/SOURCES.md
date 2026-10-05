@@ -73,9 +73,14 @@ the viewer.
 
 ## Sign Mushaf
 
-No full sign Quran or verified reusable full fingerspelling asset source is
-integrated. `المصحف الإشاري` remains Coming Soon and is intentionally distinct
-from both official KFGQPC viewing modes.
+The KFGQPC technical guide identifies `sign.qurancomplex.gov.sa` as its official
+"Tafsir of Quran meanings in sign language" service and describes films for
+some surahs, divided by surah and topic. The app offers only an external
+official-source link. No video is embedded, copied, or claimed as a full sign
+Mushaf because the service's embedding and reuse terms were not verified and
+the host did not resolve in the development environment on 2026-10-05.
+`المصحف الإشاري` therefore remains intentionally distinct from both official
+KFGQPC viewing modes and from fingerspelling.
 
 ## Local recognition dependencies
 
