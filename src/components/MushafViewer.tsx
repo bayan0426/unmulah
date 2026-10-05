@@ -4,8 +4,10 @@ const OFFICIAL_MUSHAF_URL = 'https://qurancomplex.gov.sa/isdarat-hafs/#flipbook-
 
 export function MushafViewer({ onBack }: { onBack: () => void }) {
   const [loaded, setLoaded] = useState(false);
+  const [page, setPage] = useState(1);
+  const [immersive, setImmersive] = useState(false);
 
-  return <section className="mushaf-viewer" aria-label="صفحات مصحف المدينة المرجعية">
+  return <section className={`mushaf-viewer${immersive ? ' is-immersive' : ''}`} aria-label="صفحات مصحف المدينة المرجعية">
     <header>
       <div>
         <p className="eyebrow">مرجع رسمي خارجي</p>
@@ -17,6 +19,7 @@ export function MushafViewer({ onBack }: { onBack: () => void }) {
         <a className="button button-primary" href={OFFICIAL_MUSHAF_URL} target="_blank" rel="noopener noreferrer">فتح المصدر الرسمي</a>
       </div>
     </header>
+    <div className="mushaf-native-toolbar"><button type="button" onClick={() => setPage((value) => Math.max(1, value - 1))}>??????</button><span>???? {page} ? ???? ???????</span><button type="button" onClick={() => setPage((value) => Math.min(604, value + 1))}>??????</button><button type="button" onClick={() => setImmersive((value) => !value)}>??? ??????</button></div>
     <div className="mushaf-frame-wrap">
       {!loaded && <div className="quran-data-state">جارٍ تحميل العارض الرسمي…</div>}
       <iframe title="عارض مصحف المدينة الرسمي المرجعي" src={OFFICIAL_MUSHAF_URL} onLoad={() => setLoaded(true)} className="mushaf-frame" />
