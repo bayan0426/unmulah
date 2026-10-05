@@ -163,6 +163,7 @@ function PracticePage({ navigate, reviewed, setReviewed, dynamicTarget, dynamicL
   const [targetId, setTargetId] = useState<RecitationTargetId>('ayah-1');
   const [comparisonResult, setComparisonResult] = useState<RecitationComparison | null>(null);
   const [attemptHistory, setAttemptHistory] = useState<LocalAttempt[]>(readAttemptHistory);
+  const [referenceVisible, setReferenceVisible] = useState(false);
   const [showPracticeIntro, setShowPracticeIntro] = useState(() => {
     try { return window.localStorage.getItem('unmulah_practice_intro_seen') !== 'true'; } catch { return true; }
   });
@@ -220,6 +221,17 @@ function PracticePage({ navigate, reviewed, setReviewed, dynamicTarget, dynamicL
           <div className="eyebrow">مراجعة بصرية · سورة الإخلاص</div>
           <h1>مساحتك للمراجعة</h1>
           <p>تُثبت الإشارة محليًا بعد اتفاق عدة إطارات متتالية.</p>
+        </section>
+        <section className="inline-recite-surface" aria-label="سطح المصحف أثناء التسميع">
+          <header>
+            <div><p className="eyebrow">المصحف حاضر أثناء التسميع</p><h2>{selectedTarget.label}</h2><span>التعرّف والمقارنة محليان في المتصفح. لا تُرسل الكاميرا أو الإشارات.</span></div>
+            <button type="button" onClick={() => setReferenceVisible((value) => !value)} aria-pressed={referenceVisible}>{referenceVisible ? 'إخفاء النص' : 'إظهار النص المرجعي'}</button>
+          </header>
+          {referenceVisible ? (
+            dynamicTarget
+              ? <p className="inline-target-placeholder">يظل النص الرسمي في عارض القرآن؛ هذا التسميع مرتبط بالآية المختارة.</p>
+              : <div className="inline-ayah-reference">{quranSource.verses.map((verse) => <p key={verse.number} lang="ar">{verse.text}</p>)}</div>
+          ) : <div className="inline-reference-hidden">النص مخفي للمراجعة. يمكنك إظهاره متى شئت دون أن تتغير نتيجة المقارنة.</div>}
         </section>
         <section className="practice-panel" aria-label="مساحة مراجعة سورة الإخلاص">
           <div className="practice-banner">

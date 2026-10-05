@@ -25,9 +25,8 @@ export function QuranBrowser({ onOpenAlIkhlas, onOpenRecognitionTarget }: { onOp
     const url = new URL(window.location.href); url.searchParams.set('view', next); window.history.replaceState({}, '', `${url.pathname}${url.search}`);
     try { window.localStorage.setItem('unmulah.quran.view', next); } catch { /* View selection remains session-only. */ }
   };
-  // The verified machine-target audit has at least one supported ayah in every
-  // surah. The reader still checks each ayah individually before opening practice.
-  const results = useMemo(() => filterQuranCatalog(quranCatalog, query, filter, () => true), [query, filter]);
+  // Recitation support is verified per Ayah in the reader; catalogue rows must not imply Surah-wide coverage.
+  const results = useMemo(() => filterQuranCatalog(quranCatalog, query, filter, () => false), [query, filter]);
 
   return (
     <main className="quran-browser-page" dir="rtl">
@@ -55,7 +54,7 @@ export function QuranBrowser({ onOpenAlIkhlas, onOpenRecognitionTarget }: { onOp
       <div className="quran-browser-layout">
         <section className="surah-catalog" aria-label="قائمة سور القرآن">
           {results.map((surah) => {
-            const supported = true;
+            const supported = false;
             const locallyReadable = hasLocalQuranSurah(surah.number);
             return <button className={`surah-row${selected?.number === surah.number ? ' is-selected' : ''}`} type="button" key={surah.number} onClick={() => setSelected(surah)}>
               <span className="surah-catalog-number">{surah.number}</span>

@@ -15,6 +15,8 @@ test('catalogue accepts normalized search and filters', async ({ page }) => {
   await expect(page.getByRole('button', { name: /112 الإخلاص/ })).toBeVisible();
   await search.fill('');
   await page.getByRole('button', { name: 'التسميع الذكي متاح', exact: true }).click();
+  await expect(page.getByText('لم نجد سورة بهذا الاسم أو الرقم.')).toBeVisible();
+  await page.getByRole('button', { name: 'الكل', exact: true }).click();
   await expect(page.getByRole('button', { name: /112 الإخلاص/ })).toBeVisible();
   await expect(page.getByRole('button', { name: /1 الفاتحة/ })).toBeVisible();
 });

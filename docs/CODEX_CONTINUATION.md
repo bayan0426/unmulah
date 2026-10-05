@@ -8,14 +8,16 @@
 - Global navigation now has a compact desktop primary navigation and mobile bottom navigation.
 - Home is now a Quran-first journey: it uses real local reading/listening/review data, offers direct Quran and sign-recitation entry points, and keeps the three tracks separate.
 - Reader-mode controls use real Arabic labels. Recite mode explains the supported local sign-recitation flow and does not claim support where it is unavailable.
+- The supported practice screen now includes a Quran reference surface with a user-controlled text reveal around the unchanged camera flow.
+- Quran catalogue availability no longer claims Surah-wide recognition support; support remains checked at the selected Ayah level.
 - Finishing a recitation attempt increments the local review-attempt track; it does not alter the recognition or comparison engines.
 - Removed remaining placeholder question-mark strings from the Smart reader, Progress Khatmah tracks, and native Mushaf controls.
 
 ## In progress
-- Make the supported sign-recitation attempt feel inline with the Quran reading surface, including an integrated result sheet, while leaving the locked AI core untouched.
+- Refine the inline sign-recitation presentation and add a non-invasive result sheet treatment while leaving the locked AI core untouched.
 
 ## Not completed
-- Inline-recitation presentation and result sheet.
+- Result-sheet refinement for inline recitation.
 - Full Progress/profile/library editorial layouts and mobile visual review.
 - Native Mushaf page assets are blocked pending verified reusable page-native assets.
 - Tafsir and sign-Mushaf content remain blocked pending verified source and reuse terms.
@@ -28,7 +30,7 @@
 5. src/index.css
 
 ## Next step
-Design an inline shell around the existing supported Al-Ikhlas practice route: preserve the current HandTrackingCamera and comparison behavior, but make the Quran reading surface remain visible and present the result as a sheet. Then refine the Progress and profile editorial layouts and perform mobile visual QA.
+Refine the result presentation after an inline sign-recitation attempt without altering HandTrackingCamera or comparison behavior. Then rebuild the Progress/profile/library editorial layouts and perform mobile visual QA.
 
 ## Known risks
 - Do not alter the classifier, MediaPipe, preprocessing, constrained decoding, stabilization, or Quran comparison engine.
