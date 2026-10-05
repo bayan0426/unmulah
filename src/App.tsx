@@ -73,27 +73,10 @@ function AppLink({ href, navigate, children, className, current }: {
 }
 
 function Header({ navigate, route }: { navigate: (path: Route) => void; route: Route }) {
-  return (
-    <header className="site-header">
-      <AppLink href="/" navigate={navigate} className="brand" aria-label="أُنملة — الرئيسية">
-        <img src="/brand/unmulah-logo.png" alt="" />
-        <span className="brand-wordmark"><strong>UNMULAH</strong><span>وصول القرآن لكل إنسان</span></span>
-      </AppLink>
-      <nav className="header-nav" aria-label="التنقل الرئيسي">
-        <AppLink href="/" navigate={navigate} current={route === '/'}>الرئيسية</AppLink>
-        <AppLink href="/quran" navigate={navigate} current={route === '/quran' || route === '/surah/al-ikhlas'}>القرآن</AppLink>
-        <AppLink href="/surah/al-ikhlas" navigate={navigate} current={route === '/practice/al-ikhlas'}>التسميع</AppLink>
-        <AppLink href="/accessibility" navigate={navigate} current={route === '/accessibility'}>الوصول بالإشارة</AppLink>
-        <AppLink href="/progress" navigate={navigate} current={route === '/progress'}>تقدمي</AppLink>
-        <AppLink href="/saved" navigate={navigate} current={route === '/saved'}>المحفوظات</AppLink>
-        <AppLink href="/profile" navigate={navigate} current={route === '/profile'}>ملفي</AppLink>
-        <AppLink href="/data" navigate={navigate} current={route === '/data'}>بياناتي</AppLink>
-        <AppLink href="/library" navigate={navigate} current={route === '/library'}>المكتبة</AppLink>
-        <AppLink href="/sources" navigate={navigate} current={route === '/sources'}>المصادر</AppLink>
-      </nav>
-      <div className="header-quiet"><span className="status-dot" />تعلّم ومراجعة على مهل</div>
-    </header>
-  );
+  const isQuran = route === '/quran' || route === '/surah/al-ikhlas';
+  const isPractice = route === '/practice/al-ikhlas' || route === '/practice/ayah';
+  const isMore = ['/accessibility', '/saved', '/profile', '/data', '/sources'].includes(route);
+  return <><header className="site-header" dir="rtl"><AppLink href="/" navigate={navigate} className="brand" aria-label="أُنملة — الرئيسية"><img src="/brand/unmulah-logo.png" alt="" /><span className="brand-wordmark"><strong>أُنملة</strong><span>تعلم القرآن للجميع</span></span></AppLink><nav className="header-nav" aria-label="التنقل الرئيسي"><AppLink href="/" navigate={navigate} current={route === '/'}>الرئيسية</AppLink><AppLink href="/quran" navigate={navigate} current={isQuran}>القرآن</AppLink><AppLink href="/surah/al-ikhlas" navigate={navigate} current={isPractice}>التسميع</AppLink><AppLink href="/progress" navigate={navigate} current={route === '/progress'}>تقدمي</AppLink><AppLink href="/library" navigate={navigate} current={route === '/library'}>المكتبة</AppLink></nav><details className="header-more"><summary>المزيد</summary><div className="more-menu"><AppLink href="/accessibility" navigate={navigate} current={route === '/accessibility'}>الوصول بالإشارة</AppLink><AppLink href="/saved" navigate={navigate} current={route === '/saved'}>المحفوظات</AppLink><AppLink href="/profile" navigate={navigate} current={route === '/profile'}>ملفي</AppLink><AppLink href="/data" navigate={navigate} current={route === '/data'}>بياناتي</AppLink><AppLink href="/sources" navigate={navigate} current={route === '/sources'}>المصادر</AppLink></div></details></header><nav className="mobile-nav" aria-label="التنقل السريع"><AppLink href="/" navigate={navigate} current={route === '/'}><span>⌂</span>الرئيسية</AppLink><AppLink href="/quran" navigate={navigate} current={isQuran}><span>▤</span>القرآن</AppLink><AppLink href="/surah/al-ikhlas" navigate={navigate} current={isPractice}><span>⌁</span>التسميع</AppLink><AppLink href="/progress" navigate={navigate} current={route === '/progress'}><span>◒</span>تقدمي</AppLink><AppLink href="/profile" navigate={navigate} current={isMore}><span>•••</span>المزيد</AppLink></nav></>;
 }
 
 function Breadcrumb({ navigate, label }: { navigate: (path: Route) => void; label: string }) {
