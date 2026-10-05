@@ -357,6 +357,7 @@ function PracticePage({ navigate, reviewed, setReviewed, dynamicTarget, dynamicL
                   )}
                 </div>
               </details>
+              <div className="comparison-actions"><button type="button" onClick={retry}>إعادة تسميع الهدف</button><button type="button" onClick={() => navigate('/quran')}>العودة إلى القرآن</button></div>
             </section>
           )}
           {attemptHistory.length > 0 && <section className="attempt-history" aria-label="محاولاتي الأخيرة">
