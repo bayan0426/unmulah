@@ -21,6 +21,22 @@ import {
 
 type Route = '/' | '/quran' | '/surah/al-ikhlas' | '/practice/al-ikhlas' | '/practice/ayah' | '/accessibility' | '/sources' | '/profile' | '/progress' | '/saved' | '/data';
 const REVIEW_KEY = 'unmulah.reviewed.al-ikhlas';
+const DYNAMIC_TARGET_KEY = 'unmulah.dynamic-recitation-target.v1';
+
+function readDynamicTarget(): { target: KfgqpcRecognitionTarget; label: string } | null {
+  try {
+    const parsed: unknown = JSON.parse(window.sessionStorage.getItem(DYNAMIC_TARGET_KEY) ?? 'null');
+    if (!parsed || typeof parsed !== 'object') return null;
+    const value = parsed as Record<string, unknown>;
+    const target = value.target as Record<string, unknown> | undefined;
+    if (!target || typeof value.label !== 'string' || typeof target.id !== 'string' || typeof target.surahNumber !== 'number' || typeof target.ayahNumber !== 'number' || typeof target.displayText !== 'string' || typeof target.recognitionTargetText !== 'string' || typeof target.normalizedText !== 'string' || !Array.isArray(target.expectedRawLabels) || target.source !== 'kfgqpc-emlaey') return null;
+    return { target: target as unknown as KfgqpcRecognitionTarget, label: value.label };
+  } catch { return null; }
+}
+
+function persistDynamicTarget(target: KfgqpcRecognitionTarget, label: string) {
+  try { window.sessionStorage.setItem(DYNAMIC_TARGET_KEY, JSON.stringify({ target, label })); } catch { /* In-memory navigation remains available. */ }
+}
 
 function readReviewed(): boolean {
   try {
@@ -373,8 +389,9 @@ function App() {
   });
   const [reviewed, setReviewed] = useState(readReviewed);
   const [textHidden, setTextHidden] = useState(false);
-  const [dynamicTarget, setDynamicTarget] = useState<KfgqpcRecognitionTarget | null>(null);
-  const [dynamicTargetLabel, setDynamicTargetLabel] = useState<string | null>(null);
+  const restoredDynamicTarget = readDynamicTarget();
+  const [dynamicTarget, setDynamicTarget] = useState<KfgqpcRecognitionTarget | null>(restoredDynamicTarget?.target ?? null);
+  const [dynamicTargetLabel, setDynamicTargetLabel] = useState<string | null>(restoredDynamicTarget?.label ?? null);
   const accessibilitySettings = readAccessibilitySettings();
   const updateReviewed = (value: boolean) => {
     setReviewed(value);
@@ -395,7 +412,7 @@ function App() {
     }
   };
   const openRecognitionTarget = (target: KfgqpcRecognitionTarget, label: string) => {
-    setDynamicTarget(target); setDynamicTargetLabel(label); navigate('/practice/ayah');
+    persistDynamicTarget(target, label); setDynamicTarget(target); setDynamicTargetLabel(label); navigate('/practice/ayah');
   };
 
   useEffect(() => {
