@@ -644,6 +644,10 @@ export function HandTrackingCamera({
           <strong>بانتظار إشارة ثابتة</strong>
         )}
       </section>
+      <details className="recognition-details">
+        <summary>تفاصيل التعرّف</summary>
+        <div className="recognition-details-body">
+      <p className="recognition-details-note">هذه التفاصيل تقنية وتوضح كيفية اتخاذ النظام لقرار التعرّف، ولا تمثل حكمًا على صحة القرآن أو تفسيره.</p>
       <section className="prediction-debug" aria-label="تشخيص نموذج الإشارات التجريبي" aria-live="polite">
         <strong>تشخيص النموذج التجريبي</strong>
         <div><span>حالة النموذج</span><b>{classifierState === 'loading' ? 'جاري تحميل النموذج محليًا' : classifierState === 'ready' ? 'جاهز محليًا' : classifierState === 'error' ? 'تعذر تحميل النموذج' : 'لم يبدأ'}</b></div>
@@ -688,6 +692,12 @@ export function HandTrackingCamera({
           </div>
         ))}
       </section>
+        </div>
+      </details>
+      <details className="local-processing-note">
+        <summary>المعالجة على جهازك</summary>
+        <p>تبدأ الكاميرا بعد اختيارك. تُعالج المعالم والاستدلال محليًا داخل المتصفح، ولا يُسجّل أو يُرفع فيديو الكاميرا.</p>
+      </details>
       <div className="camera-controls">
         <button type="button" className="camera-start" onClick={startCamera} disabled={isRunning}>
           تشغيل الكاميرا

@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
 import { HandTrackingCamera, type AcceptedArabicSign } from './components/HandTrackingCamera';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { QuranBrowser } from './components/QuranBrowser';
+import { SignAccessPage, SourcesPrivacyPage } from './components/InfoPages';
 import { quranSource } from './data/surahAlIkhlas';
+import { clearAttemptHistory, readAttemptHistory, removeAttempt, saveAttempt, type LocalAttempt } from './lib/attemptHistory';
 import {
   RECITATION_TARGETS,
   allowedRawLabelsForTarget,
@@ -10,7 +14,7 @@ import {
   type RecitationTargetId,
 } from './lib/recitationComparison';
 
-type Route = '/' | '/quran' | '/surah/al-ikhlas' | '/practice/al-ikhlas';
+type Route = '/' | '/quran' | '/surah/al-ikhlas' | '/practice/al-ikhlas' | '/accessibility' | '/sources';
 const REVIEW_KEY = 'unmulah.reviewed.al-ikhlas';
 
 function readReviewed(): boolean {
@@ -55,7 +59,10 @@ function Header({ navigate, route }: { navigate: (path: Route) => void; route: R
       </AppLink>
       <nav className="header-nav" aria-label="التنقل الرئيسي">
         <AppLink href="/" navigate={navigate} current={route === '/'}>الرئيسية</AppLink>
-        <AppLink href="/quran" navigate={navigate} current={route === '/quran' || route === '/surah/al-ikhlas' || route === '/practice/al-ikhlas'}>التعلّم</AppLink>
+        <AppLink href="/quran" navigate={navigate} current={route === '/quran' || route === '/surah/al-ikhlas'}>القرآن</AppLink>
+        <AppLink href="/surah/al-ikhlas" navigate={navigate} current={route === '/practice/al-ikhlas'}>التسميع</AppLink>
+        <AppLink href="/accessibility" navigate={navigate} current={route === '/accessibility'}>الوصول بالإشارة</AppLink>
+        <AppLink href="/sources" navigate={navigate} current={route === '/sources'}>المصادر</AppLink>
       </nav>
       <div className="header-quiet"><span className="status-dot" />تعلّم ومراجعة على مهل</div>
     </header>
@@ -101,6 +108,15 @@ function Home({ navigate, reviewed }: { navigate: (path: Route) => void; reviewe
           </div>
           <div className={`progress-state${reviewed ? ' is-done' : ''}`}><span className="status-dot" />{reviewed ? 'تم تسجيل المراجعة' : 'لم تُسجّل مراجعة بعد'}</div>
         </section>
+        <section className="home-journey" aria-labelledby="journey-title">
+          <div><p className="eyebrow">رحلتك في أُنملة</p><h2 id="journey-title">اقرأ، راجع، سمّع بالإشارة، ثم راجع نتيجتك</h2></div>
+          <ol><li><span>١</span><strong>اقرأ القرآن</strong><small>نص موثّق حيث يتوفر محليًا</small></li><li><span>٢</span><strong>راجع بهدوء</strong><small>أخفِ النص عندما تصبح مستعدًا</small></li><li><span>٣</span><strong>سمّع بالإشارة</strong><small>يتوفر MVP لسورة الإخلاص</small></li><li><span>٤</span><strong>راجع النتيجة</strong><small>مقارنة حتمية للتسلسل المقبول</small></li></ol>
+        </section>
+        <section className="home-capabilities" aria-label="قدرات أُنملة">
+          <article><Icon name="book" size={22} /><h2>قراءة القرآن</h2><p>فهرس من ١١٤ سورة، مع قراءة نص الإخلاص المحلي الموثّق.</p><AppLink href="/quran" navigate={navigate}>استكشف القرآن</AppLink></article>
+          <article><Icon name="check" size={22} /><h2>التسميع الذكي بالإشارة</h2><p>معالجة محلية للحروف لسورة الإخلاص، مع تسلسل ومقارنة شفافة.</p><AppLink href="/surah/al-ikhlas" navigate={navigate}>ابدأ بالإخلاص</AppLink></article>
+          <article><Icon name="eye" size={22} /><h2>الوصول القرآني بالإشارة</h2><p>هندسة جاهزة لأصول هجاء إصبعي موثّقة؛ لا نعرض أصولًا غير مرخّصة.</p><AppLink href="/accessibility" navigate={navigate}>اعرف المزيد</AppLink></article>
+        </section>
       </main>
       <Footer />
     </>
@@ -108,32 +124,7 @@ function Home({ navigate, reviewed }: { navigate: (path: Route) => void; reviewe
 }
 
 function QuranPage({ navigate }: { navigate: (path: Route) => void }) {
-  return (
-    <>
-      <main className="learning-page">
-        <Breadcrumb navigate={navigate} label="مسار التعلّم" />
-        <section className="page-heading">
-          <div className="eyebrow">مسار التعلّم</div>
-          <h1>ابدأ بسورة الإخلاص</h1>
-          <p>اقرأ النص المعتمد، ثم انتقل إلى مساحة المراجعة التحضيرية.</p>
-        </section>
-        <div className="learn-layout">
-          <article className="surah-feature">
-            <div><div className="feature-overline">السورة ١١٢ · ٤ آيات</div><h2>الإخلاص</h2><p>قراءة، إخفاء للنص، ثم مساحة مراجعة.</p></div>
-            <AppLink href="/surah/al-ikhlas" navigate={navigate} className="button">افتح السورة <Icon name="arrow" /></AppLink>
-          </article>
-          <aside className="surah-meta" aria-label="تفاصيل السورة">
-            <div className="meta-title">تفاصيل المسار</div>
-            <div className="meta-row"><span>السورة</span><strong>الإخلاص</strong></div>
-            <div className="meta-row"><span>عدد الآيات</span><strong>٤</strong></div>
-            <div className="meta-row"><span>الرواية</span><strong>حفص عن عاصم</strong></div>
-          </aside>
-        </div>
-        <aside className="focus-note">اقرأ كل آية بوقتك. عندما تكون مستعدًا، أخفِ النص وانتقل إلى مساحة المراجعة.</aside>
-      </main>
-      <Footer />
-    </>
-  );
+  return <><QuranBrowser onOpenAlIkhlas={() => navigate('/surah/al-ikhlas')} /><Footer /></>;
 }
 
 function SurahPage({ navigate, reviewed, textHidden, setTextHidden }: {
@@ -179,6 +170,10 @@ function SurahPage({ navigate, reviewed, textHidden, setTextHidden }: {
           {' '}<a href={quranSource.sourceUrl} target="_blank" rel="noreferrer">{quranSource.sourceName} — منصة المطوّرين</a>.
           {' '}المرآة العامة: <a href={quranSource.mirrorUrl} target="_blank" rel="noreferrer">quran-data-kfgqpc</a>. لم تتم إعادة تحرير النص.
         </div>
+        <section className="tafsir-preview" aria-label="التفسير الميسر">
+          <div><strong>التفسير الميسر</strong><span>سيظهر هذا القسم عند دمج مصدر موثّق وحقوق استخدام واضحة. لا يُنشأ تفسير تلقائيًا.</span></div>
+          <span className="coming-soon">قريبًا</span>
+        </section>
       </main>
       <Footer />
     </>
@@ -195,6 +190,10 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
   const [attemptFinished, setAttemptFinished] = useState(false);
   const [targetId, setTargetId] = useState<RecitationTargetId>('ayah-1');
   const [comparisonResult, setComparisonResult] = useState<RecitationComparison | null>(null);
+  const [attemptHistory, setAttemptHistory] = useState<LocalAttempt[]>(readAttemptHistory);
+  const [showPracticeIntro, setShowPracticeIntro] = useState(() => {
+    try { return window.localStorage.getItem('unmulah_practice_intro_seen') !== 'true'; } catch { return true; }
+  });
   const selectedTarget = getRecitationTarget(targetId);
   const allowedRawLabels = useMemo(() => allowedRawLabelsForTarget(targetId), [targetId]);
   const onAcceptedLetter = useCallback((prediction: AcceptedArabicSign) => {
@@ -214,13 +213,27 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
     }
   };
   const finishAttempt = () => {
-    setComparisonResult(compareAlIkhlasRecitation(recognizedSequence, targetId));
+    const result = compareAlIkhlasRecitation(recognizedSequence, targetId);
+    setComparisonResult(result);
+    setAttemptHistory(saveAttempt(result));
     setAttemptFinished(true);
   };
   const selectTarget = (nextTargetId: RecitationTargetId) => {
     setTargetId(nextTargetId);
     setComparisonResult(null);
     setAcceptanceResetKey((key) => key + 1);
+  };
+  const repeatAttempt = (attempt: LocalAttempt) => {
+    setTargetId(attempt.targetId);
+    retry();
+  };
+  const deleteAttempt = (id: string) => setAttemptHistory((history) => removeAttempt(history, id));
+  const deleteAllAttempts = () => {
+    if (window.confirm('هل تريد مسح سجل المحاولات المحلي نهائيًا؟')) setAttemptHistory(clearAttemptHistory());
+  };
+  const dismissPracticeIntro = () => {
+    setShowPracticeIntro(false);
+    try { window.localStorage.setItem('unmulah_practice_intro_seen', 'true'); } catch { /* Session-only dismissal. */ }
   };
 
   return (
@@ -252,6 +265,7 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
             <section className="practice-card camera-card">
               <h3>مساحة الكاميرا</h3>
               <p>لن يُطلب إذن الكاميرا إلا عند اختيار تشغيل الكاميرا. لا يتم حفظ أو إرسال أي صور أو فيديو.</p>
+              {showPracticeIntro ? <section className="practice-intro" aria-label="قبل البدء"><div><strong>قبل البدء</strong><ol><li>ثبّت الكاميرا أمامك.</li><li>ضع يدك بوضوح داخل الإطار.</li><li>انتظر حتى يتأكد النظام من الإشارة.</li><li>ارفع يدك قليلًا بعد كل حرف لتثبيته.</li></ol></div><button type="button" onClick={dismissPracticeIntro}>فهمت، ابدأ</button></section> : <button type="button" className="show-instructions" onClick={() => setShowPracticeIntro(true)}>عرض التعليمات</button>}
               <HandTrackingCamera
                 onAcceptedLetter={onAcceptedLetter}
                 acceptanceResetKey={acceptanceResetKey}
@@ -292,15 +306,23 @@ function PracticePage({ navigate, reviewed, setReviewed }: {
                 <div><span>إجمالي الحروف المتعرّف عليها</span><strong>{comparisonResult.totalRecognizedLetters}</strong></div>
                 <div><span>نسبة تطابق المحاولة مع المرجع</span><strong>{(comparisonResult.accuracy * 100).toFixed(1)}%</strong></div>
               </div>
-              <div className="comparison-debug">
-                <div><span>التسلسل المتعرّف عليه</span><b dir="rtl">{comparisonResult.recognizedDebugSequence || '—'}</b></div>
-                <div><span>التسلسل المرجعي المطبّع</span><b dir="rtl">{comparisonResult.expectedNormalized}</b></div>
-                {comparisonResult.unresolved.length > 0 && (
-                  <div><span>فئات غير محسومة</span><b dir="ltr">{comparisonResult.unresolved.map((item) => item.rawLabel).join(', ')}</b></div>
-                )}
-              </div>
+              <p className="comparison-explanation">قد يخطئ نظام التعرّف. النتيجة أداة مساعدة للمراجعة وليست حكمًا شرعيًا أو تقييمًا نهائيًا للحفظ.</p>
+              <details className="recognition-details comparison-details">
+                <summary>تفاصيل المقارنة</summary>
+                <div className="comparison-debug">
+                  <div><span>التسلسل المتعرّف عليه</span><b dir="rtl">{comparisonResult.recognizedDebugSequence || '—'}</b></div>
+                  <div><span>التسلسل المرجعي المطبّع</span><b dir="rtl">{comparisonResult.expectedNormalized}</b></div>
+                  {comparisonResult.unresolved.length > 0 && (
+                    <div><span>فئات غير محسومة</span><b dir="ltr">{comparisonResult.unresolved.map((item) => item.rawLabel).join(', ')}</b></div>
+                  )}
+                </div>
+              </details>
             </section>
           )}
+          {attemptHistory.length > 0 && <section className="attempt-history" aria-label="محاولاتي الأخيرة">
+            <div className="attempt-history-heading"><div><h3>محاولاتي</h3><p>تُحفظ هذه الأرقام على جهازك فقط. لا تُحفظ صور أو فيديو أو بيانات كاميرا.</p></div><button type="button" onClick={deleteAllAttempts}>مسح سجل المحاولات</button></div>
+            <div className="attempt-history-list">{attemptHistory.slice(0, 4).map((attempt) => <div className="attempt-history-item" key={attempt.id}><span>{attempt.targetLabel}</span><b>{(attempt.accuracy * 100).toFixed(1)}%</b><small>{new Intl.DateTimeFormat('ar-SA', { dateStyle: 'short', timeStyle: 'short' }).format(new Date(attempt.completedAt))}</small><em>صحيح {attempt.correct} · ناقص {attempt.missing} · زائد {attempt.extra} · مستبدل {attempt.substitutions}</em><div><button type="button" onClick={() => repeatAttempt(attempt)}>إعادة نفس المحاولة</button><button type="button" onClick={() => deleteAttempt(attempt.id)}>حذف المحاولة</button></div></div>)}</div>
+          </section>}
           <div className="future-controls" aria-label="عناصر تحكم الإشارة الثابتة">
             <button type="button" onClick={retry} disabled={recognizedSequence.length === 0 && !attemptFinished}>إعادة المحاولة</button>
             <button type="button" onClick={undo} disabled={recognizedSequence.length === 0}>تراجع</button>
@@ -325,7 +347,7 @@ function App() {
       window.history.replaceState({}, '', '/surah/al-ikhlas');
       return '/surah/al-ikhlas';
     }
-    return path === '/quran' || path === '/surah/al-ikhlas' ? path : '/';
+    return path === '/quran' || path === '/surah/al-ikhlas' || path === '/accessibility' || path === '/sources' ? path : '/';
   });
   const [reviewed, setReviewed] = useState(readReviewed);
   const [textHidden, setTextHidden] = useState(false);
@@ -350,20 +372,22 @@ function App() {
   useEffect(() => {
     const onPopState = () => {
       const path = window.location.pathname;
-      setRoute(path === '/quran' || path === '/surah/al-ikhlas' || path === '/practice/al-ikhlas' ? path : '/');
+      setRoute(path === '/quran' || path === '/surah/al-ikhlas' || path === '/practice/al-ikhlas' || path === '/accessibility' || path === '/sources' ? path : '/');
     };
     window.addEventListener('popstate', onPopState);
     return () => window.removeEventListener('popstate', onPopState);
   }, []);
 
   return (
-    <div className="app-shell">
+    <ErrorBoundary><div className="app-shell">
       <Header navigate={navigate} route={route} />
       {route === '/' && <Home navigate={navigate} reviewed={reviewed} />}
       {route === '/quran' && <QuranPage navigate={navigate} />}
       {route === '/surah/al-ikhlas' && <SurahPage navigate={navigate} reviewed={reviewed} textHidden={textHidden} setTextHidden={setTextHidden} />}
       {route === '/practice/al-ikhlas' && <PracticePage navigate={navigate} reviewed={reviewed} setReviewed={updateReviewed} />}
-    </div>
+      {route === '/accessibility' && <><SignAccessPage onOpenAlIkhlas={() => navigate('/surah/al-ikhlas')} /><Footer /></>}
+      {route === '/sources' && <><SourcesPrivacyPage /><Footer /></>}
+    </div></ErrorBoundary>
   );
 }
 

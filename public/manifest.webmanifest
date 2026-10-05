@@ -1,0 +1,13 @@
+{
+  "name": "أُنملة | وصول القرآن لكل إنسان",
+  "short_name": "أُنملة",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8F5EE",
+  "theme_color": "#033F34",
+  "icons": [
+    { "src": "/favicon.png", "sizes": "any", "type": "image/png", "purpose": "any" }
+  ]
+}

@@ -1,20 +1,77 @@
 # أُنملة | UNMULAH
 
-Arabic-first Quran learning experience. Phase 1 supports a focused learning
-flow for Surah Al-Ikhlas; visual recognition is intentionally inactive.
+**وصول القرآن لكل إنسان.** أُنملة منصة قرآن عربية أولًا، تُصمَّم لتوسيع
+الوصول أمام الصم ومستخدمي لغة الإشارة. تجمع النسخة الحالية بين القراءة
+الموثقة لسورة الإخلاص، والهجاء الإصبعي، وتسميع تجريبي محلي بالكامل.
 
-## Run locally
+## لمن صُمّمت؟
+
+للمستخدمين الصم ومستخدمي لغة الإشارة، وللمعلّمين والأسر الذين يريدون أداة
+مساعدة هادئة للمراجعة. لا تحل النتائج محل المختصين أو التحقق الشخصي للحفظ.
+
+## نطاق MVP الحالي
+
+- فهرس عربي قابل للبحث لجميع سور القرآن (أسماء وأعداد الآيات فقط).
+- قراءة موثقة محليًا لسورة الإخلاص بالرسم العثماني/حفص.
+- تسميع بالإشارة لسورة الإخلاص فقط، على مستوى الحرف.
+- مقارنة حتمية للتسلسل المقبول مع المرجع؛ لا تستخدم نموذجًا لغويًا أو LLM.
+- معالجة كاميرا واستدلال ومقارنة محلية داخل المتصفح.
+- سجل محاولات محلي يخزن أرقام المقارنة فقط، ولا يخزن فيديو أو صورًا.
+
+النص الكامل لبقية السور، تصفح صفحات المصحف، التفسير الميسر، وأصول الإشارة
+المرئية تبقى **قريبًا** إلى أن تتوفر مصادر رسمية وحقوق إعادة استخدام واضحة.
+
+## رحلة المستخدم
+
+`اقرأ → راجع → سمّع بالإشارة → راجع النتيجة`
+
+1. افتح **القرآن** واختر سورة الإخلاص.
+2. اقرأ النص، ثم أخفه لفتح مساحة التسميع.
+3. شغّل الكاميرا بنفسك؛ لا تبدأ تلقائيًا.
+4. ثبّت الإشارة، ارفع اليد لتأكيدها، ثم أنهِ المحاولة لرؤية مقارنة التسلسل.
+5. افتح **تفاصيل التعرّف** عند الحاجة إلى أدلة تقنية شفافة.
+
+## مسار الذكاء الاصطناعي
+
+`camera → MediaPipe → 21 landmarks → wrist-centering + scale normalization → local MLP → target-constrained decoding → temporal stabilization → release → accepted sequence → deterministic alignment`
+
+النموذج يعالج معالم اليد فقط. لا يوجد تعرف على الوجه، ولا رفع لإطارات الكاميرا،
+ولا تسجيل فيديو. تفاصيل المسار في [ARCHITECTURE.md](docs/ARCHITECTURE.md).
+
+## التشغيل المحلي
+
+يتطلب Node.js حديثًا وnpm.
 
 ```sh
 npm install
 npm run dev
+npm test
+npm run typecheck
+npm run build
 ```
 
-The development server uses port 5000 for the Replit preview. Create a
-production build with `npm run build`.
+يعمل خادم التطوير على المنفذ `5000`. في بيئات Windows المقيدة قد يحتاج Vite
+إلى السماح بإنشاء عملية فرعية أثناء الاختبار أو البناء.
 
-## Scope and sources
+## التقنية
 
-The current app includes Home → Quran learning → Surah Al-Ikhlas → hidden-text
-practice shell. It does not run a camera or AI model. Quran text provenance and
-verification notes are in [docs/SOURCES.md](docs/SOURCES.md).
+- React + TypeScript + Vite
+- MediaPipe Hand Landmarker
+- مصنف MLP محلي بأوزان Keras مصدّرة إلى Float32
+- Canvas لرسم 21 معلمًا وارتباطاتها
+- Vitest للمسار الحتمي للتسلسل والمقارنة
+
+## السلامة والمصادر
+
+لا يُولّد أُنملة نصًا قرآنيًا أو تفسيرًا. مصدر نص الإخلاص، مصدر النموذج،
+الترخيص، وحدود إعادة التوزيع موثقة في [SOURCES.md](docs/SOURCES.md).
+
+## القيود وخارطة الطريق
+
+- التسميع الذكي حاليًا لسورة الإخلاص فقط وقد يخطئ.
+- يلزم اختبار متخصصين ومستخدمين صم قبل أي ادعاء بموثوقية عملية.
+- لم تُدمج أصول هجاء إصبعي مرئية؛ العارض جاهز لأصول موثقة فقط.
+- لا توجد حسابات أو خادم أو قاعدة بيانات أو مزامنة سحابية.
+
+راجع [DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) للعرض، و[DEPLOYMENT.md](docs/DEPLOYMENT.md)
+للنشر الثابت لاحقًا.
