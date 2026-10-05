@@ -631,12 +631,22 @@ button:focus-visible, a:focus-visible {
 .smart-search-results button span { color:rgba(24,33,29,.64);font:12px var(--font-arabic); }
 .smart-ayah { font-family:'KFGQPC Hafs Smart',var(--font-arabic);font-size:clamp(26px,3.5vw,42px);line-height:1.75;direction:rtl; }
 .smart-search-results .smart-ayah { color:var(--deep);font-size:26px; }
-.smart-ayah-list { display:grid;gap:12px;margin-top:20px; }
-.smart-ayah-card { padding:18px;border:1px solid rgba(3,63,52,.12);border-radius:14px;background:rgba(217,230,210,.16); }
-.smart-ayah-card.is-selected { border-color:var(--gold);box-shadow:0 0 0 2px rgba(201,169,106,.16); }
+.smart-ayah-list { display:grid;gap:0;margin-top:24px;border:1px solid rgba(3,63,52,.15);border-radius:18px;overflow:hidden;background:linear-gradient(135deg,rgba(217,230,210,.24),rgba(248,245,238,.76)); }
+.smart-ayah-card { width:100%;padding:20px clamp(16px,3vw,32px);border:0;border-bottom:1px solid rgba(3,63,52,.12);background:transparent;text-align:right;cursor:pointer; }
+.smart-ayah-card:last-child { border-bottom:0; }
+.smart-ayah-card:hover { background:rgba(217,230,210,.46); }
+.smart-ayah-card.is-selected { background:rgba(201,169,106,.12);box-shadow:inset -3px 0 var(--gold); }
 .smart-ayah-meta { display:flex;justify-content:space-between;gap:14px;color:rgba(24,33,29,.6);font:12px var(--font-arabic); }
-.smart-ayah-card p { margin:9px 0 0;text-align:right;color:var(--deep); }
+.smart-ayah-card p { max-width:900px;margin:11px auto 0;text-align:right;color:var(--deep); }
+.smart-ayah-card small { display:block;margin-top:5px;color:rgba(24,33,29,.5);font:11px var(--font-arabic); }
 .smart-source-note { margin:18px 0 0;padding-top:14px;border-top:1px solid rgba(3,63,52,.1);color:rgba(24,33,29,.62);font:12px/1.8 var(--font-arabic); }
+.ayah-sheet-backdrop { position:fixed;z-index:30;inset:0;padding:20px;background:rgba(3,63,52,.42);display:grid;place-items:end center; }
+.ayah-action-sheet { width:min(720px,100%);max-height:min(78vh,700px);overflow:auto;padding:25px;border-radius:22px 22px 0 0;background:var(--paper);box-shadow:0 -14px 45px rgba(3,63,52,.23);direction:rtl; }
+.ayah-action-sheet header { display:flex;align-items:flex-start;justify-content:space-between;gap:15px; }
+.ayah-action-sheet h3 { margin:7px 0;color:var(--deep);font:600 24px var(--font-arabic); }
+.ayah-action-sheet header > button { width:36px;height:36px;border:1px solid rgba(3,63,52,.18);border-radius:50%;background:transparent;color:var(--deep);font-size:24px;cursor:pointer; }
+.ayah-action-sheet > p { color:rgba(24,33,29,.67);font:14px/1.8 var(--font-arabic); }
+.ayah-actions { display:flex;flex-wrap:wrap;gap:8px; }
 .mushaf-viewer header > div:last-child { display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end; }
 .mushaf-frame-wrap { min-height:600px;margin-top:20px;position:relative;border:1px solid rgba(3,63,52,.14);border-radius:14px;overflow:hidden;background:rgba(217,230,210,.2); }
 .mushaf-frame-wrap .quran-data-state { position:absolute;inset:0;margin:0;border:0;border-radius:0;z-index:0; }

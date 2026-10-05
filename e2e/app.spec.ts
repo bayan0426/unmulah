@@ -25,7 +25,7 @@ test('three Quran views are truthful', async ({ page }) => {
   await page.getByRole('tab', { name: 'المصحف الإشاري' }).click();
   await expect(page.getByText('نعمل على إضافة عرض قرآني إشاري من مصدر موثوق ومصرح باستخدامه.')).toBeVisible();
   await page.getByRole('tab', { name: 'صفحات المصحف' }).click();
-  await expect(page.getByRole('link', { name: 'فتح بملء الشاشة' })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'فتح المصدر الرسمي' })).toBeVisible();
 });
 
 test('official smart Quran loads all key Surah endpoints and search metadata', async ({ page }) => {
@@ -35,12 +35,21 @@ test('official smart Quran loads all key Surah endpoints and search metadata', a
   for (const value of ['2', '112', '114'] as const) {
     await selector.selectOption(value);
     await expect(selector).toHaveValue(value);
-    await expect(page.locator('.smart-ayah-list article').first()).toBeVisible();
+    await expect(page.locator('.smart-ayah-card').first()).toBeVisible();
   }
   const QuranSearch = page.getByRole('textbox', { name: 'ابحث في القرآن' });
   await QuranSearch.fill('بسم الله');
   await expect(page.getByText(/نتائج البحث:/)).toBeVisible();
   await expect(page.getByText(/الجزء 1/).first()).toBeVisible();
+});
+
+test('smart Quran ayah actions are contextual and do not claim unavailable content', async ({ page }) => {
+  await page.goto('/quran?view=smart');
+  await page.locator('.smart-ayah-card').first().click();
+  await expect(page.getByRole('dialog', { name: /خيارات الآية 1/ })).toBeVisible();
+  await expect(page.getByText('التلاوة الصوتية قريبًا بعد توثيق المصدر')).toBeVisible();
+  await page.getByRole('button', { name: 'إغلاق خيارات الآية' }).click();
+  await expect(page.getByRole('dialog')).toHaveCount(0);
 });
 
 test('reading, practice, details, sources and sign access render without starting camera', async ({ page }) => {

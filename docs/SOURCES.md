@@ -60,11 +60,16 @@ separate from the authority and provenance of the supplied content.
 
 ## Official Mushaf publication viewer — page view
 
-`مصحف المدينة — عرض الصفحات` uses an iframe shell pointing to the official
-publication viewer: <https://qurancomplex.gov.sa/isdarat-hafs/#flipbook-df_11311/1/>.
-It is a distinct traditional page-view mode. If the official site blocks framing
-through CSP or frame ancestors policy, the app provides an explicit direct-open
-fallback and does not bypass browser security or scrape the viewer.
+`صفحات مصحف المدينة` is a **temporary external-reference** shell pointing to
+the official publication viewer: <https://qurancomplex.gov.sa/isdarat-hafs/#flipbook-df_11311/1/>.
+It is not presented as the application's primary interactive Mushaf. The
+in-app, ayah-interactive reading experience is the supplied Hafs Smart text.
+The official developer platform also describes a separate vector digital copy
+of the Madinah Mushaf for application use, but those files and their applicable
+reuse decision have not been supplied to this repository. If the official site
+blocks framing through CSP or frame ancestors policy, the app provides an
+explicit direct-open fallback and does not bypass browser security or scrape
+the viewer.
 
 ## Sign Mushaf
 
@@ -113,10 +118,11 @@ asset record is added.
 
 ## Tafsir and official developer packages
 
-The official developer page lists a Tafseer Muyassar package and Hafs datasets
-with verse/page/line metadata. It was not downloaded or integrated because the
-app has not recorded explicit redistribution terms for the package. No Tafsir
-text is present in the app. See the official [developer platform](https://qurancomplex.gov.sa/en/techquran/dev/).
+The official developer page lists a Tafseer Muyassar package and describes it
+as developer content for desktop, mobile, browser applications, and research.
+It was not downloaded or integrated because the app has not recorded the exact
+package download, checksum, and redistribution decision. No Tafsir text is
+present in the app. See the official [developer platform](https://qurancomplex.gov.sa/en/techquran/dev/).
 
 ## Religious reference note
 
