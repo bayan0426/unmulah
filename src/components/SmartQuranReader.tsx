@@ -29,7 +29,7 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas, onOpenRecog
   const [activeAyah, setActiveAyah] = useState<number | null>(null);
   const [readerSettings, setReaderSettings] = useState<QuranReaderSettings>(readQuranReaderSettings);
   const [savedContent, setSavedContent] = useState<SavedQuranAyah[]>(readSavedContent);
-  const [mode, setMode] = useState<'read' | 'listen' | 'recite' | 'test'>('read');
+  const [mode, setMode] = useState<'read' | 'listen' | 'recite'>('read');
   const [progress, setProgress] = useState(readQuranProgress);
   const activeSince = useRef<number | null>(null);
 
@@ -102,7 +102,6 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas, onOpenRecog
         <button type="button" className={mode === 'read' ? 'is-active' : ''} onClick={() => setMode('read')}>قراءة</button>
         <button type="button" className={mode === 'listen' ? 'is-active' : ''} onClick={() => setMode('listen')}>استمع</button>
         <button type="button" className={mode === 'recite' ? 'is-active' : ''} onClick={() => setMode('recite')}>سمّع بالإشارة</button>
-        <button type="button" className={mode === 'test' ? 'is-active' : ''} onClick={() => setMode('test')}>اختبر نفسك</button>
       </div>
       <div><p className="eyebrow">النص العثماني الذكي</p><h2>{surah.name}</h2><p>السورة {surahNumber} · {surah.ayahs.length} آية · حفص عن عاصم</p></div>
       <div className="smart-reader-actions">
@@ -129,7 +128,6 @@ export function SmartQuranReader({ initialSurah = 1, onOpenAlIkhlas, onOpenRecog
     {mode === 'listen' && <QuranAudioPlayer surahNumber={surahNumber} ayahCount={surah.ayahs.length} selectedAyah={selectedAyah} onSelectAyah={setSelectedAyah} onActiveAyah={setActiveAyah} onListeningProgress={(seconds) => setProgress(addQuranProgress('listeningSeconds', seconds))} />}
     <div className="quran-progress-strip"><span>قراءة نشطة: {Math.floor(progress.readingSeconds / 60)} د</span><span>استماع: {Math.floor(progress.listeningSeconds / 60)} د</span><span>مراجعة / تسميع: {progress.reviewAttempts}</span></div>
     {mode === 'recite' && <div className="reader-mode-note reader-recite-note"><div><strong>التسميع بالإشارة</strong><span>ابقَ داخل المصحف، واختر الآية التي تريدها لفتح التسميع المحلي عندما تكون مدعومة.</span></div>{surahNumber === 112 && <button type="button" onClick={openAlIkhlasPractice}>ابدأ سورة الإخلاص</button>}</div>}
-    {mode === 'test' && <p className="reader-mode-note"><strong>اختبر نفسك</strong> — أخفِ النص من إعدادات القراءة عندما تكون مستعدًا، ثم راجع الآية من الذاكرة. لا يُسجّل هذا إتقانًا تلقائيًا.</p>}
     {query && <div className="smart-search-results" aria-live="polite">
       <strong>نتائج البحث: {results.length}{results.length === 30 ? '+' : ''}</strong>
       {results.map((result) => <button type="button" key={result.id} onClick={() => { setSurahNumber(result.sura_no); setSelectedAyah(result.aya_no); setQuery(''); }}>

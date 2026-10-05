@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState, type MouseEvent, type ReactNode } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type MouseEvent, type ReactNode } from 'react';
 import { HandTrackingCamera, type AcceptedArabicSign } from './components/HandTrackingCamera';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { QuranBrowser } from './components/QuranBrowser';
@@ -75,10 +75,21 @@ function AppLink({ href, navigate, children, className, current }: {
 }
 
 function Header({ navigate, route }: { navigate: (path: Route) => void; route: Route }) {
-  const isQuran = route === '/quran' || route === '/surah/al-ikhlas';
-  const isPractice = route === '/practice/al-ikhlas' || route === '/practice/ayah';
-  const isMore = ['/accessibility', '/saved', '/profile', '/data', '/sources'].includes(route);
-  return <><header className="site-header" dir="rtl"><AppLink href="/" navigate={navigate} className="brand" aria-label="أُنملة — الرئيسية"><img src="/brand/unmulah-logo.png" alt="" /><span className="brand-wordmark"><strong>أُنملة</strong><span>تعلم القرآن للجميع</span></span></AppLink><nav className="header-nav" aria-label="التنقل الرئيسي"><AppLink href="/" navigate={navigate} current={route === '/'}>الرئيسية</AppLink><AppLink href="/quran" navigate={navigate} current={isQuran}>القرآن</AppLink><AppLink href="/surah/al-ikhlas" navigate={navigate} current={isPractice}>التسميع</AppLink><AppLink href="/progress" navigate={navigate} current={route === '/progress'}>تقدمي</AppLink><AppLink href="/library" navigate={navigate} current={route === '/library'}>المكتبة</AppLink></nav><details className="header-more"><summary>المزيد</summary><div className="more-menu"><AppLink href="/accessibility" navigate={navigate} current={route === '/accessibility'}>الوصول بالإشارة</AppLink><AppLink href="/saved" navigate={navigate} current={route === '/saved'}>المحفوظات</AppLink><AppLink href="/profile" navigate={navigate} current={route === '/profile'}>ملفي</AppLink><AppLink href="/data" navigate={navigate} current={route === '/data'}>بياناتي</AppLink><AppLink href="/sources" navigate={navigate} current={route === '/sources'}>المصادر</AppLink></div></details></header><nav className="mobile-nav" aria-label="التنقل السريع"><AppLink href="/" navigate={navigate} current={route === '/'}><span>⌂</span>الرئيسية</AppLink><AppLink href="/quran" navigate={navigate} current={isQuran}><span>▤</span>القرآن</AppLink><AppLink href="/surah/al-ikhlas" navigate={navigate} current={isPractice}><span>⌁</span>التسميع</AppLink><AppLink href="/progress" navigate={navigate} current={route === '/progress'}><span>◒</span>تقدمي</AppLink><AppLink href="/profile" navigate={navigate} current={isMore}><span>•••</span>المزيد</AppLink></nav></>;
+  const [moreOpen, setMoreOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const isQuran = route === '/quran' || route === '/surah/al-ikhlas' || route === '/practice/ayah';
+  useEffect(() => {
+    const close = (event: globalThis.MouseEvent) => { if (!menuRef.current?.contains(event.target as Node)) setMoreOpen(false); };
+    const escape = (event: KeyboardEvent) => { if (event.key === 'Escape') setMoreOpen(false); };
+    document.addEventListener('mousedown', close); window.addEventListener('keydown', escape);
+    return () => { document.removeEventListener('mousedown', close); window.removeEventListener('keydown', escape); };
+  }, []);
+  const closeAndNavigate = (path: Route) => { setMoreOpen(false); navigate(path); };
+  return <><header className="site-header" dir="rtl">
+    <AppLink href="/" navigate={navigate} className="brand" aria-label="أُنملة — الرئيسية"><img src="/brand/unmulah-logo.png" alt="" /><span className="brand-wordmark"><strong>أُنملة</strong><span>رحلتك مع القرآن</span></span></AppLink>
+    <nav className="header-nav" aria-label="التنقل الرئيسي"><AppLink href="/quran" navigate={navigate} current={isQuran}>القرآن</AppLink><AppLink href="/progress" navigate={navigate} current={route === '/progress'}>تقدمي</AppLink><AppLink href="/library" navigate={navigate} current={route === '/library'}>المكتبة</AppLink><AppLink href="/profile" navigate={navigate} current={route === '/profile'}>ملفي</AppLink></nav>
+    <div className="header-more" ref={menuRef}><button type="button" aria-expanded={moreOpen} aria-haspopup="menu" onClick={() => setMoreOpen((value) => !value)}>المزيد</button>{moreOpen && <div className="more-menu" role="menu"><button role="menuitem" onClick={() => closeAndNavigate('/accessibility')}>الوصول بالإشارة</button><button role="menuitem" onClick={() => closeAndNavigate('/saved')}>المحفوظات</button><button role="menuitem" onClick={() => closeAndNavigate('/data')}>بياناتي</button><button role="menuitem" onClick={() => closeAndNavigate('/sources')}>المصادر</button></div>}</div>
+  </header><nav className="mobile-nav" aria-label="التنقل السريع"><AppLink href="/quran" navigate={navigate} current={isQuran}><span>▤</span>القرآن</AppLink><AppLink href="/progress" navigate={navigate} current={route === '/progress'}><span>◒</span>تقدمي</AppLink><AppLink href="/library" navigate={navigate} current={route === '/library'}><span>▧</span>المكتبة</AppLink><AppLink href="/profile" navigate={navigate} current={route === '/profile'}><span>•</span>ملفي</AppLink><button type="button" onClick={() => setMoreOpen((value) => !value)} aria-expanded={moreOpen}><span>•••</span>المزيد</button></nav></>;
 }
 
 function Breadcrumb({ navigate, label }: { navigate: (path: Route) => void; label: string }) {

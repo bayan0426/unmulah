@@ -1,40 +1,37 @@
 # Codex continuation
 
-## Completed
-- Locked local MediaPipe, MLP classification, constrained decoding, stabilization, and deterministic comparison remain intact.
-- Smart Quran reader has a continuous reading canvas, local reading/listening progress foundation, and four reader modes.
-- Native Mushaf shell has page controls and immersive fallback around the official external viewer.
-- Progress includes separate local reading/listening/review tracks and a 28-day activity heatmap.
-- Global navigation now has a compact desktop primary navigation and mobile bottom navigation.
-- Home is now a Quran-first journey: it uses real local reading/listening/review data, offers direct Quran and sign-recitation entry points, and keeps the three tracks separate.
-- Reader-mode controls use real Arabic labels. Recite mode explains the supported local sign-recitation flow and does not claim support where it is unavailable.
-- The supported practice screen now includes a Quran reference surface with a user-controlled text reveal around the unchanged camera flow.
-- Deterministic comparison now has a responsive result-sheet presentation; its counts, confidence handling, and comparison algorithm are unchanged.
-- Quran catalogue availability no longer claims Surah-wide recognition support; support remains checked at the selected Ayah level.
-- Finishing a recitation attempt increments the local review-attempt track; it does not alter the recognition or comparison engines.
-- Removed remaining placeholder question-mark strings from the Smart reader, Progress Khatmah tracks, and native Mushaf controls.
-- Profile now has a local-only preference editor and accessibility panel; Library now separates the official Quran offering from source-pending religious material.
-- Mobile Playwright coverage verifies Home, Quran, Surah, Progress, Profile, and Library at 390px without horizontal overflow.
+## Current validated checkpoint
+- Preserved locked MediaPipe, local MLP classifier, constrained decoding, stabilization, automatic sequence building, and deterministic comparison.
+- Rebuilt the application shell so Quran is the primary desktop and mobile destination; standalone primary recitation navigation was removed.
+- Replaced the More control with a controlled accessible menu that toggles, closes on outside interaction and Escape, and closes before navigating.
+- Simplified Home to one Quran primary action, an optional real-progress continuation action, and separate real local activity totals.
+- Added PageQuranReader: the default Quran view is now a continuous page-based reading layout using verified local Uthmani display text, inline ayah markers, page metadata, and ayah actions.
+- Retained Smart Text as a secondary interactive mode with settings, search, audio, and ayah actions.
+- Removed the duplicate unfinished test-yourself reader mode.
+- Restored per-Ayah audited availability computation in the Smart Text Surah index. Surahs show full, partial with supported/total counts, or unavailable based on the actual verified target creator.
+- Unit tests and production build pass after this checkpoint.
 
 ## In progress
-- Safe flagship UI backlog is complete; remaining items require verified external source or reuse decisions.
+- Finish validation of the rewritten E2E suite for the new default page view and Smart Text switcher.
 
-## Not completed
-- Native Mushaf page assets are blocked pending verified reusable page-native assets.
-- Tafsir and sign-Mushaf content remain blocked pending verified source and reuse terms.
+## Still required from flagship brief
+1. Add Library cards for Mushaf editions (routing to the existing official viewer) and the future Dhikr counter.
+2. Build primary live sign-recitation reveal inside the Quran page while preserving the current camera/state-machine core.
+3. Complete final P0 desktop/mobile visual QA and update tests for menu behavior, availability filters, reader mode switching, supported/unsupported ayah flows, Library cards, and live reveal.
+4. Add an optional low-risk PWA manifest if it can be verified locally.
 
-## Open first
-1. src/components/SmartQuranReader.tsx
-2. src/App.tsx
-3. src/components/HandTrackingCamera.tsx
-4. src/components/ExperiencePages.tsx
-5. src/index.css
+## First files
+1. src/components/QuranBrowser.tsx
+2. src/components/PageQuranReader.tsx
+3. src/components/SmartQuranReader.tsx
+4. src/App.tsx
+5. src/components/LibraryPage.tsx
+6. e2e/app.spec.ts
 
-## Next step
-Obtain explicit reusable official native Mushaf page assets, Tafsir source terms, and sign-Mushaf reuse/embedding terms before implementing the remaining content.
+## Exact next command
+Run npm.cmd run test:e2e after stopping/reusing the stale local Playwright web server, then update its assumptions to the default page view and its explicit Smart Text switch.
 
-## Known risks
-- Do not alter the classifier, MediaPipe, preprocessing, constrained decoding, stabilization, or Quran comparison engine.
-- Do not replace official displayed Quran text or use Emlaey text for display.
-- Native page assets, Tafsir, and a verified sign Mushaf remain source-blocked and must stay truthful.
-- public/arabic-sign/model/tmp5p8d9a03/ is inaccessible and must not be modified.
+## Source blockers
+- Native official Mushaf page image/vector assets are not available with verified reusable terms.
+- Tafsir content and full sign-Mushaf content remain unavailable without verified source/reuse terms.
+- Do not modify public/arabic-sign/model/tmp5p8d9a03/ (permission denied).

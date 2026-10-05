@@ -5,11 +5,11 @@ test('home and primary navigation render', async ({ page }) => {
   await expect(page.getByRole('heading', { name: /رحلتك مع القرآن/ })).toBeVisible();
   await expect(page.getByRole('navigation', { name: 'التنقل الرئيسي' })).toBeVisible();
   await page.getByRole('navigation', { name: 'التنقل الرئيسي' }).getByRole('link', { name: 'القرآن', exact: true }).click();
-  await expect(page.getByRole('tab', { name: 'النص الذكي' })).toBeVisible();
+  await expect(page.getByRole('tab', { name: 'عرض الصفحات' })).toBeVisible();
 });
 
 test('catalogue accepts normalized search and filters', async ({ page }) => {
-  await page.goto('/quran?view=smart');
+  await page.goto('/quran?view=smart'); await page.getByRole('tab', { name: 'النص الذكي' }).click();
   const search = page.getByRole('textbox', { name: 'ابحث عن سورة' });
   await search.fill('الاخلاص');
   await expect(page.getByRole('button', { name: /112 الإخلاص/ })).toBeVisible();
@@ -22,7 +22,7 @@ test('catalogue accepts normalized search and filters', async ({ page }) => {
 });
 
 test('three Quran views are truthful', async ({ page }) => {
-  await page.goto('/quran?view=smart');
+  await page.goto('/quran?view=smart'); await page.getByRole('tab', { name: 'النص الذكي' }).click();
   await expect(page.getByRole('heading', { name: /الفاتحة/ })).toBeVisible();
   await page.getByRole('tab', { name: 'المصحف الإشاري' }).click();
   await expect(page.getByText('نعمل على إضافة عرض قرآني إشاري من مصدر موثوق ومصرح باستخدامه.')).toBeVisible();
@@ -31,7 +31,7 @@ test('three Quran views are truthful', async ({ page }) => {
 });
 
 test('official smart Quran loads all key Surah endpoints and search metadata', async ({ page }) => {
-  await page.goto('/quran?view=smart');
+  await page.goto('/quran?view=smart'); await page.getByRole('tab', { name: 'النص الذكي' }).click();
   const selector = page.getByRole('combobox', { name: 'اختر سورة' });
   await expect(selector).toBeVisible();
   for (const value of ['2', '112', '114'] as const) {
@@ -46,7 +46,7 @@ test('official smart Quran loads all key Surah endpoints and search metadata', a
 });
 
 test('smart Quran ayah actions are contextual and do not claim unavailable content', async ({ page }) => {
-  await page.goto('/quran?view=smart');
+  await page.goto('/quran?view=smart'); await page.getByRole('tab', { name: 'النص الذكي' }).click();
   await page.locator('.reader-mode-launcher button').nth(1).click();
   await expect(page.locator('.quran-audio-player')).toBeVisible();
   await page.getByRole('combobox', { name: 'اختر سورة' }).selectOption('112');
@@ -58,7 +58,7 @@ test('smart Quran ayah actions are contextual and do not claim unavailable conte
   await expect(page.getByText(/هدف التسميع:/)).toBeVisible();
   await page.reload();
   await expect(page.getByText(/هدف التسميع:/)).toBeVisible();
-  await page.goto('/quran?view=smart');
+  await page.goto('/quran?view=smart'); await page.getByRole('tab', { name: 'النص الذكي' }).click();
   await page.locator('.reading-ayah-trigger').first().click();
   await page.getByRole('button', { name: 'إغلاق خيارات الآية' }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);
@@ -69,7 +69,7 @@ test('local profile, accessibility settings, and saved references are usable', a
   await expect(page.getByRole('heading', { name: 'مساحتك في أُنملة' })).toBeVisible();
   await page.getByRole('combobox', { name: 'حجم النص' }).selectOption('large');
   await page.getByLabel('تباين مرتفع').check();
-  await page.goto('/quran?view=smart');
+  await page.goto('/quran?view=smart'); await page.getByRole('tab', { name: 'النص الذكي' }).click();
   await page.locator('.reading-ayah-trigger').first().click();
   await page.getByRole('button', { name: 'حفظ الآية' }).click();
   await page.goto('/saved');
