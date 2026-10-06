@@ -16,10 +16,10 @@ source:
 - SHA-256 of the full source JSON file used for extraction:
   `5d8bb91726e482839d0057633cb1973031e4d706fa9604eea5e08892f20ba140`
 
-Only the four `aya_text` fields for Surah 112 are included in this app. Their
-Unicode text, diacritics, non-breaking spaces, and verse markers are retained
-as supplied by the source. The separate `aya_text_emlaey` field is not used.
-No LLM was used to generate, reconstruct, or correct Quran text.
+The legacy provider retains the four `aya_text` fields for Surah 112 without
+editing. The current Quran reader uses the separately documented owner-supplied
+official Hafs Smart v0.8 package below for all 6,236 records. No LLM was used to
+generate, reconstruct, or correct Quran text.
 
 ## Reuse and verification status
 

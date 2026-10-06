@@ -42,13 +42,14 @@ biometric material.
 ## Quran content
 
 `src/data/quran/types.ts` defines provider types with source provenance,
-redistribution state, verse, juz, page, and line metadata fields. The only
-registered provider today is `trustedAlIkhlasProvider`, which exposes the
-existing documented local Surah Al-Ikhlas content. `getLocalQuranSurah` provides
-a stable seam for a future official King Fahd Complex import.
+redistribution state, verse, juz, page, and line metadata fields. The current
+reader loads the owner-supplied official KFGQPC Hafs Smart v0.8 JSON locally,
+validates its 6,236 records, and renders its unedited `aya_text` with the
+supplied font. `aya_text_emlaey` is comparison/search-only; it is never used as
+the displayed Quran text. The legacy `trustedAlIkhlasProvider` remains a narrow
+trusted reference for the original fixed-target flow.
 
-No provider invents missing Quran text. Pages and readers explicitly report when
-official content is not installed.
+No provider invents, normalizes, or replaces displayed Quran text.
 
 ## Sign-asset content
 
