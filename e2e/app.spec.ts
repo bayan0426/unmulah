@@ -107,3 +107,14 @@ test('Progress page presents the Quran journey for a new user', async ({ page })
   await expect(page.locator('.achievement-card.is-locked').first()).toBeVisible();
   await expect(page.locator('.header-nav a[aria-current="page"]')).toContainText('تقدمي');
 });
+
+
+test('journey map exposes semantic milestone controls', async ({ page }) => {
+  await page.goto('/progress');
+  const firstNode = page.locator('.journey-node button').first();
+  await firstNode.focus();
+  await expect(firstNode).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+});

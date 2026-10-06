@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { createProgressJourney, localDayKey } from './progressJourney';
+import { JOURNEY_STAGES } from '../data/progressJourney';
 
 const base = { readingSeconds: 0, listeningSeconds: 0, reviewAttempts: 0 };
 const attempt = (day: string) => ({ id: day, completedAt: `${day}T09:00:00`, targetId: 'ayah-1', targetLabel: 'آية', correct: 1, missing: 0, extra: 0, substitutions: 0, accuracy: 1 });
 
 describe('Quran journey progress selectors', () => {
+  it('keeps the first centralized stage named البداية', () => {
+    expect(JOURNEY_STAGES[0]?.titleAr).toBe('البداية');
+  });
   it('keeps a brand-new user at zero without inventing progress', () => {
     const journey = createProgressJourney([], [], base, new Date(2026, 9, 6));
     expect(journey.stagePercent).toBe(0);

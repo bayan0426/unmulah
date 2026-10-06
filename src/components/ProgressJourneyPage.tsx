@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { LocalAttempt } from '../lib/attemptHistory';
 import type { LocalActivity } from '../lib/localExperience';
 import type { QuranProgress } from '../lib/quranProgress';
@@ -22,7 +22,13 @@ export function ProgressJourneyPage({ activities, attempts, quranProgress }: Pro
   const journey = useMemo(() => createProgressJourney(activities, attempts, quranProgress), [activities, attempts, quranProgress]);
   const [showDetails, setShowDetails] = useState(false);
   const [selected, setSelected] = useState<MilestoneState | null>(null);
+  useEffect(() => {
+    const close = (event: KeyboardEvent) => { if (event.key === 'Escape') setSelected(null); };
+    window.addEventListener('keydown', close);
+    return () => window.removeEventListener('keydown', close);
+  }, []);
   const { metrics, stage, nodes, nextMilestone } = journey;
+  const stageNumber = journey.stages.findIndex((item) => item.id === stage.id) + 1;
   const tracks = [
     { id: 'memorization', title: 'الحفظ', icon: '⌁', value: 'لم تتوفر جلسات حفظ موثقة بعد', progress: 0, note: 'سيظهر التقدم هنا عند توفر سجل حفظ موثوق.' },
     { id: 'reading', title: 'القراءة', icon: '▤', value: metricText('reading', metrics.readingMinutes), progress: Math.min(100, metrics.readingMinutes * 10), note: metrics.readingMinutes ? 'وقت قراءة نشط مسجل محليًا' : 'ابدأ جلسة قراءة نشطة.' },
@@ -39,13 +45,14 @@ export function ProgressJourneyPage({ activities, attempts, quranProgress }: Pro
 
   return <main className="progress-journey-page" dir="rtl">
     <section className="progress-journey-hero" aria-labelledby="journey-title">
-      <div className="progress-hero-copy"><p className="eyebrow">رحلتي مع القرآن</p><h1 id="journey-title">المرحلة الأولى — {stage.titleAr}</h1><p>رحلتك تنمو مع كل قراءة ومراجعة، وفق نشاطك المسجل على هذا الجهاز.</p><div className="progress-stage-meta"><span>{journey.stageCompleted} من {stage.milestones.length} محطات مكتملة</span><span>🔥 {metrics.currentStreak ? `${number.format(metrics.currentStreak)} أيام متتالية` : 'ابدأ سلسلة جديدة اليوم'}</span></div></div>
+      <div className="progress-hero-copy"><p className="eyebrow">رحلتي مع القرآن</p><h1 id="journey-title">المرحلة {number.format(stageNumber)} — {stage.titleAr}</h1><p>رحلتك تنمو مع كل قراءة ومراجعة، وفق نشاطك المسجل على هذا الجهاز.</p><div className="progress-stage-meta"><span>{journey.stageCompleted} من {stage.milestones.length} محطات مكتملة</span><span>🔥 {metrics.currentStreak ? `${number.format(metrics.currentStreak)} أيام متتالية` : 'ابدأ سلسلة جديدة اليوم'}</span></div></div>
       <div className="progress-ring" style={{ '--progress': `${journey.stagePercent * 3.6}deg` } as React.CSSProperties} aria-label={`تقدم المرحلة ${journey.stagePercent}%`}><strong>{number.format(journey.stagePercent)}%</strong><span>من المرحلة</span></div>
     </section>
 
     <section className="progress-journey-layout">
-      <section className="journey-map" aria-label="خريطة رحلة القرآن">
-        <div className="journey-map-scenery" aria-hidden="true"><span className="journey-sun" /><span className="journey-hill hill-one" /><span className="journey-hill hill-two" /><span className="journey-water" /><span className="journey-lantern">✦</span></div>
+      <section className={`journey-map journey-growth-${Math.min(4, Math.ceil(journey.stagePercent / 25))}`} aria-label="خريطة رحلة القرآن">
+        <div className="journey-map-scenery" aria-hidden="true"><span className="journey-sun" /><span className="journey-hill hill-one" /><span className="journey-hill hill-two" /><span className="journey-water" /><span className="journey-lantern">✦</span><span className="journey-tree tree-one">♧</span><span className="journey-tree tree-two">♧</span><span className="journey-pavilion">⌂</span></div>
+        <svg className="journey-winding-path" viewBox="0 0 700 700" preserveAspectRatio="none" aria-hidden="true"><path d="M455 690C585 620 524 570 390 532S170 443 300 380s246-89 116-147S151 154 242 74" /><path className="journey-winding-path-fill" d="M455 690C585 620 524 570 390 532S170 443 300 380s246-89 116-147S151 154 242 74" /></svg>
         <div className="journey-map-heading"><p className="eyebrow">خريطة الرحلة</p><h2>خطوات هادئة في رحلتك</h2><p>المحطات تحفّزك ولا تقيد الوصول إلى القرآن.</p></div>
         <ol className="journey-node-list">{nodes.map((node, index) => <li className={`journey-node is-${node.status}`} key={node.id}>
           <span className="journey-path-segment" aria-hidden="true" />

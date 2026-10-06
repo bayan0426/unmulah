@@ -19,6 +19,7 @@
 - `src/lib/progressJourney.ts` derives current/longest local-calendar streaks, active days, real reading/listening minutes, completed sign attempts, reviews, stage progress, and the next incomplete milestone.
 - Current real metrics: active reading seconds, listening seconds, recorded reviews, local completed sign attempts, and local activity dates. Memorization/Hizb/Juz measurements intentionally remain empty because no trustworthy memorization data exists.
 - Achievement cards are calculated from those same real metrics; a locked card is a progress state, never a claim that Quran content is unavailable.
+- The map’s visual world is CSS/SVG only: a winding path, layered landscape, landmark motifs, current-node emphasis, stage preview, and medallion-style achievement states. No remote art or runtime dependency was added.
 
 ## Validation
 - `npm.cmd test`: 61 passing
