@@ -77,3 +77,22 @@ test('primary flagship surfaces fit a mobile viewport', async ({ page }) => {
     await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   }
 });
+
+
+test('desktop header keeps brand right, navigation centered, and More left', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/');
+  const positions = await page.evaluate(() => {
+    const box = (selector: string) => document.querySelector(selector)?.getBoundingClientRect();
+    const brand = box('.brand'); const nav = box('.header-nav'); const more = box('.header-more');
+    return { brand, nav, more, width: window.innerWidth, menuText: document.querySelector('.more-menu')?.textContent ?? '' };
+  });
+  expect(positions.brand).not.toBeNull();
+  expect(positions.nav).not.toBeNull();
+  expect(positions.more).not.toBeNull();
+  expect(positions.brand!.right).toBeGreaterThan(positions.nav!.right);
+  expect(positions.more!.left).toBeLessThan(positions.nav!.left);
+  await page.getByRole('button', { name: 'المزيد' }).first().click();
+  await expect(page.getByRole('menu')).not.toContainText('بياناتي');
+  await expect(page.getByRole('menu')).not.toContainText('الوصول بالإشارة');
+});

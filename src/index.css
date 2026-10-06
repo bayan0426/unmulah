@@ -883,3 +883,23 @@ body::before{content:'';position:fixed;inset:auto -12vw 0;width:124vw;height:280
 .page-reader-controls{display:flex;gap:8px}.page-mask-wrap{position:relative;display:inline-block;min-width:4em}.page-mask{color:rgba(22,54,47,.35);letter-spacing:.03em}.page-revealed-official{position:absolute;inset:0;overflow:hidden;white-space:nowrap;color:var(--deep);direction:rtl}.page-ayah-flow.is-inline-recite{background:rgba(174,232,190,.17)}.inline-camera-panel{position:fixed;z-index:70;left:24px;bottom:24px;width:min(430px,calc(100vw - 48px));max-height:calc(100vh - 110px);overflow:auto;padding:20px;border:1px solid var(--line);border-radius:24px;background:#fffdf8;box-shadow:0 24px 70px rgba(4,59,50,.24);direction:rtl}.inline-camera-panel>header{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.inline-camera-panel h2{margin:3px 0;font:600 21px var(--font-arabic);color:var(--deep)}.inline-camera-panel header span{font:13px var(--font-arabic);color:rgba(22,54,47,.7)}.inline-camera-panel>header>button{border:0;background:transparent;color:var(--forest);font:14px var(--font-arabic);cursor:pointer}.inline-live-feedback{margin:12px 0;padding:10px 12px;border-radius:12px;background:var(--sage);font:14px var(--font-arabic);color:var(--deep)}.inline-recite-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}.inline-recite-actions button,.inline-result-sheet button{border:1px solid var(--line);border-radius:10px;background:#fffdf8;color:var(--forest);padding:9px 12px;font:14px var(--font-arabic);cursor:pointer}.inline-recite-actions button:last-child{background:var(--forest);color:white}.inline-recite-actions button:disabled{opacity:.45}.inline-result-sheet{position:fixed;z-index:75;right:50%;bottom:22px;transform:translateX(50%);width:min(620px,calc(100vw - 32px));padding:24px;border-radius:24px;background:#fffdf8;box-shadow:0 24px 70px rgba(4,59,50,.28);direction:rtl}.inline-result-sheet h2{margin:0 0 15px;color:var(--deep);font:600 27px var(--font-arabic)}.inline-result-sheet>div{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}.inline-result-sheet span{display:grid;gap:4px;padding:10px;border-radius:11px;background:var(--sage);font:12px var(--font-arabic)}.inline-result-sheet b{font-size:18px;color:var(--deep)}.inline-result-sheet button{margin-top:15px;margin-left:8px}@media(max-width:760px){.page-reader-controls{flex-direction:column}.inline-camera-panel{left:0;right:0;bottom:62px;width:auto;max-height:72vh;border-radius:24px 24px 0 0}.inline-result-sheet{bottom:62px}.inline-result-sheet>div{grid-template-columns:repeat(3,1fr)}}
 
 .library-feature-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px}.library-feature-grid .library-feature{margin:0;text-decoration:none;color:inherit}.library-dhikr{background:linear-gradient(145deg,#f7f1df,#fffdf8)}@media(max-width:760px){.library-feature-grid{grid-template-columns:1fr}}
+
+/* Closure fixes: explicit official Quran font and structural RTL header placement. */
+.site-header{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);min-height:82px;direction:ltr}
+.site-header .brand{grid-column:3;justify-self:end;direction:rtl}
+.site-header .brand img{width:58px;height:58px}
+.site-header .brand-wordmark strong{font-size:26px}
+.site-header .brand-wordmark span{font-size:12px}
+.site-header .header-nav{grid-column:2;justify-self:center;direction:rtl}
+.site-header .header-more{grid-column:1;justify-self:start;position:relative;direction:rtl}
+.page-ayah-text{font-family:'KFGQPC Hafs Smart',var(--font-arabic);font-size:clamp(24px,3.15vw,37px);line-height:2.25}
+.page-revealed-official{pointer-events:none}
+.page-ayah-flow.is-inline-recite{border-radius:7px}
+.page-ayah-flow.is-inline-recite.is-needs-review{box-shadow:inset 0 -2px 0 rgba(178,74,58,.7)}
+.inline-feedback-list{display:grid;gap:6px;margin:10px 0}
+.inline-feedback-item{padding:8px 10px;border-radius:9px;font:13px var(--font-arabic)}
+.inline-feedback-item.is-extra,.inline-feedback-item.is-substitution,.inline-feedback-item.is-missing{background:#fff0eb;color:#7a2f24}
+.inline-feedback-item.is-correct{background:var(--sage);color:var(--deep)}
+.inline-error-list{margin:14px 0;padding:0;list-style:none;display:grid;gap:8px}
+.inline-error-list li{padding:9px 11px;border-radius:10px;background:#fff0eb;color:#703126;font:14px var(--font-arabic)}
+@media(max-width:760px){.site-header{display:flex;direction:rtl;min-height:67px}.site-header .brand,.site-header .header-more,.site-header .header-nav{grid-column:auto;justify-self:auto}.site-header .brand img{width:46px;height:46px}.site-header .brand-wordmark strong{font-size:21px}}
