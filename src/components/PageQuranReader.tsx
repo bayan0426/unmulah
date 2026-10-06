@@ -4,6 +4,7 @@ import { compareRecognizedSequence, type RecitationComparison } from '../lib/rec
 import { deriveLiveRecitationFeedback, reviewableAlignmentOperations } from '../lib/quranLiveRecitation';
 import { createRecognitionTargetFromKfgqpc, type KfgqpcRecognitionTarget } from '../lib/quranCoverageAudit';
 import { loadKfgqpcSmartRecords, type KfgqpcSmartRecord } from '../data/quran/kfgqpcSmartProvider';
+import { arabicDisplayLabelFor } from '../data/arabicSignLabels';
 
 function maskedText(text: string) {
   return Array.from(text).map((character) => /\s/.test(character) ? ' ' : '□').join('');
@@ -11,8 +12,8 @@ function maskedText(text: string) {
 
 function feedbackText(kind: 'correct' | 'extra' | 'substitution', expected: string | null, recognized: string) {
   if (kind === 'correct') return 'تمت مطابقة الحرف المرجعي، ويُكشف النص الأصلي فقط.';
-  if (kind === 'extra') return `زائد: ${recognized}`;
-  return `المتوقع: ${expected ?? '—'} · تم التعرف: ${recognized}`;
+  if (kind === 'extra') return `زائد: ${arabicDisplayLabelFor(recognized)}`;
+  return `المتوقع: ${expected ?? '—'} · تم التعرف: ${arabicDisplayLabelFor(recognized)}`;
 }
 
 function operationText(operation: RecitationComparison['operations'][number]) {
@@ -40,6 +41,9 @@ export function PageQuranReader() {
   const live = active ? deriveLiveRecitationFeedback(active.target.expectedRawLabels, sequence) : { revealedCount: 0, feedback: [] };
   const revealPercent = active ? Math.min(100, (live.revealedCount / active.target.expectedRawLabels.length) * 100) : 0;
   const lastFeedback = live.feedback.at(-1) ?? null;
+  const expectedFeedbackCharacter = lastFeedback?.expectedIndex === null || lastFeedback?.expectedIndex === undefined || !active
+    ? null
+    : Array.from(active.target.normalizedText)[lastFeedback.expectedIndex] ?? null;
   const hasLiveError = Boolean(lastFeedback && lastFeedback.kind !== 'correct');
   const reviewOperations = result ? reviewableAlignmentOperations(result.operations) : [];
 
@@ -89,8 +93,8 @@ export function PageQuranReader() {
     </div>
     {selected && <div className="ayah-sheet-backdrop" onClick={() => setSelected(null)} role="presentation"><section className="ayah-action-sheet" role="dialog" aria-modal="true" aria-label={`خيارات الآية ${selected.aya_no}`} onClick={(event) => event.stopPropagation()}><header><div><p className="eyebrow">خيارات الآية</p><h3>{selected.sura_name_ar} · الآية {selected.aya_no}</h3></div><button type="button" onClick={() => setSelected(null)} aria-label="إغلاق خيارات الآية">×</button></header><p>يمكنك التسميع هنا مباشرة إن كانت حروف الآية مدعومة، أو فتح مساحة المراجعة التفصيلية من النص الذكي.</p>{target ? <button type="button" className="button button-primary" onClick={startInline}>سمّع بالإشارة هنا</button> : <span className="reader-unavailable">التسميع بالإشارة غير متاح لهذه الآية حاليًا بسبب حروف غير مدعومة.</span>}</section></div>}
     {active && <aside className="inline-camera-panel" aria-label="التسميع بالإشارة"><header><div><p className="eyebrow">تسميع مباشر داخل المصحف</p><h2>{active.record.sura_name_ar} · الآية {active.record.aya_no}</h2><span>تم الكشف الصحيح: {live.revealedCount} من {active.target.expectedRawLabels.length}</span></div><button type="button" onClick={() => { setActive(null); retry(); }}>إغلاق</button></header>
-      <div className="inline-live-feedback">{lastFeedback ? feedbackText(lastFeedback.kind, lastFeedback.expectedRawLabel, lastFeedback.recognizedRawLabel) : 'جارٍ انتظار الإشارة الثابتة…'}</div>
-      <div className="inline-feedback-list" aria-live="polite">{lastFeedback && <div className={`inline-feedback-item is-${lastFeedback.kind}`}>{feedbackText(lastFeedback.kind, lastFeedback.expectedRawLabel, lastFeedback.recognizedRawLabel)}</div>}</div>
+      <div className="inline-live-feedback">{lastFeedback ? feedbackText(lastFeedback.kind, expectedFeedbackCharacter, lastFeedback.recognizedRawLabel) : 'جارٍ انتظار الإشارة الثابتة…'}</div>
+      <div className="inline-feedback-list" aria-live="polite">{lastFeedback && <div className={`inline-feedback-item is-${lastFeedback.kind}`}>{feedbackText(lastFeedback.kind, expectedFeedbackCharacter, lastFeedback.recognizedRawLabel)}</div>}</div>
       <HandTrackingCamera onAcceptedLetter={(item) => setSequence((items) => [...items, item])} acceptanceResetKey={resetKey} acceptanceEnabled={!finished} allowedRawLabels={active.target.expectedRawLabels} />
       <div className="inline-recite-actions"><button type="button" onClick={retry}>إعادة المحاولة</button><button type="button" onClick={() => setSequence((items) => items.slice(0, -1))} disabled={sequence.length === 0}>تراجع</button><button type="button" onClick={finish} disabled={sequence.length === 0 || finished}>إنهاء المحاولة</button></div>
     </aside>}

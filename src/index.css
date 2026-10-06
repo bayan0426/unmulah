@@ -887,7 +887,7 @@ body::before{content:'';position:fixed;inset:auto -12vw 0;width:124vw;height:280
 /* Closure fixes: explicit official Quran font and structural RTL header placement. */
 .site-header{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);min-height:82px;direction:ltr}
 .site-header .brand{grid-column:3;justify-self:end;direction:rtl}
-.site-header .brand img{width:58px;height:58px}
+.site-header .brand img{width:70px;height:70px}
 .site-header .brand-wordmark strong{font-size:26px}
 .site-header .brand-wordmark span{font-size:12px}
 .site-header .header-nav{grid-column:2;justify-self:center;direction:rtl}
@@ -902,4 +902,4 @@ body::before{content:'';position:fixed;inset:auto -12vw 0;width:124vw;height:280
 .inline-feedback-item.is-correct{background:var(--sage);color:var(--deep)}
 .inline-error-list{margin:14px 0;padding:0;list-style:none;display:grid;gap:8px}
 .inline-error-list li{padding:9px 11px;border-radius:10px;background:#fff0eb;color:#703126;font:14px var(--font-arabic)}
-@media(max-width:760px){.site-header{display:flex;direction:rtl;min-height:67px}.site-header .brand,.site-header .header-more,.site-header .header-nav{grid-column:auto;justify-self:auto}.site-header .brand img{width:46px;height:46px}.site-header .brand-wordmark strong{font-size:21px}}
+@media(max-width:760px){.site-header{display:flex;direction:rtl;min-height:67px}.site-header .brand,.site-header .header-more,.site-header .header-nav{grid-column:auto;justify-self:auto}.site-header .brand img{width:52px;height:52px}.site-header .brand-wordmark strong{font-size:21px}}

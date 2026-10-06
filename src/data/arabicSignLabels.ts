@@ -42,3 +42,8 @@ export const VERIFIED_ARABIC_SIGN_LABELS: Partial<Record<ArabicSignModelLabel, s
   taa: 'ت',
   toot: 'ة',
 };
+
+/** Presentation-only conversion for Arabic-facing UI. Raw class labels stay internal. */
+export function arabicDisplayLabelFor(rawLabel: string): string {
+  return VERIFIED_ARABIC_SIGN_LABELS[rawLabel as ArabicSignModelLabel] ?? 'غير معروف';
+}

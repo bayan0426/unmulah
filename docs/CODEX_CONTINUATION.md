@@ -9,6 +9,8 @@
 - Inline Mushaf recitation remains local and on the Quran route. Its progressive reveal advances only for consecutive correct raw-label matches and clips/reveals only the original official display text. No prediction is ever inserted into Quran text.
 - Inline feedback distinguishes correct, extra, and substituted accepted signals; deterministic final alignment provides missing, extra, and substituted review items. Undo and retry recompute/revert all local reveal and feedback state.
 - Inline results name the score `نسبة التطابق` and include a current-attempt `راجع الأخطاء` view.
+- Arabic-facing recitation feedback uses `arabicDisplayLabelFor` in `src/data/arabicSignLabels.ts`; unknown internal classes display `غير معروف` rather than a raw model identifier.
+- The header continues to use the original logo, with a larger desktop/mobile mark while preserving its three-column RTL placement.
 - Smart Text remains the separate advanced detailed-review route.
 
 ## Validation
