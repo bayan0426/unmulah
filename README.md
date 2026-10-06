@@ -108,7 +108,7 @@ npm run test:e2e
 ### Public deployment
 
 The production deployment uses Vercel SPA rewrites through `vercel.json`.
-**Public HTTPS URL: pending Vercel account authentication.**
+**Public HTTPS URL: https://unmulah.vercel.app**
 
 Camera processing, landmarks, model inference, and comparison stay in the
 browser. No camera frames, video, or audio are uploaded or recorded.

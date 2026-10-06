@@ -40,9 +40,11 @@
 - Final submission source: the submission-candidate-v1 tag after the deployment configuration checkpoint.
 - Restore tag: `submission-candidate-v1` (will be advanced only if final deployment configuration is committed).
 - Hosting: Vercel static Vite deployment, with `vercel.json` SPA fallback.
-- Public URL: pending Vercel authentication.
-- Final checks before deployment: unit tests, typecheck, build, and Playwright E2E must be green.
-- Camera and model verification on the public HTTPS origin remains pending the deployment URL.
+- Vercel project: `bayan0426/unmulah`.
+- Public URL: https://unmulah.vercel.app
+- Production deployment: `dpl_HCcA4gkhqYgh8b5bGuTiEEDZqkeo`, status `Ready`.
+- Public-root, direct-route refresh, Smart Quran data/font surface, hide/show, Progress, Library, and Profile were verified on the production origin.
+- The production origin serves local MediaPipe and local classifier assets without request failures. The remote test browser could not provide a camera stream; a physical-device camera permission test remains required.
 
 ### Explicitly deferred
 - Voice recitation

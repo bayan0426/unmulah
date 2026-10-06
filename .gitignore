@@ -151,3 +151,5 @@ playwright-report/
 
 # Turbo Repo
 .turbo
+.vercel
+.env*
