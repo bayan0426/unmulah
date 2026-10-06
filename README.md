@@ -75,3 +75,40 @@ npm run build
 
 راجع [DEMO_SCRIPT.md](docs/DEMO_SCRIPT.md) للعرض، و[DEPLOYMENT.md](docs/DEPLOYMENT.md)
 للنشر الثابت لاحقًا.
+
+## Delivery candidate
+
+**أُنملة | Unmulah** is an Arabic-first, local-first Quran learning MVP for
+Deaf and sign-language users. The current delivery candidate provides:
+
+- a Quran-first page reader using the local official KFGQPC Hafs Smart display data;
+- local hide/show memorization mode;
+- inline sign-language recitation that stays inside the Quran reader;
+- MediaPipe hand landmarks and a local browser MLP classifier;
+- progressive reveal of trusted Quran display text and deterministic comparison feedback;
+- Smart Text and detailed review flows;
+- a local-only Quran Journey progress view, Library, and Profile.
+
+### Run locally
+
+```sh
+npm install
+npm run dev
+```
+
+### Validate
+
+```sh
+npm test
+npm run typecheck
+npm run build
+npm run test:e2e
+```
+
+### Public deployment
+
+The production deployment uses Vercel SPA rewrites through `vercel.json`.
+**Public HTTPS URL: pending Vercel account authentication.**
+
+Camera processing, landmarks, model inference, and comparison stay in the
+browser. No camera frames, video, or audio are uploaded or recorded.

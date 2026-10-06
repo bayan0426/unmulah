@@ -34,3 +34,21 @@
 - Exact native official Mushaf page assets remain unavailable with verified reusable terms. The application accurately calls the default reader a page-based layout, not a pixel-perfect printed Mushaf.
 - Tafsir text and sign-Mushaf content remain unavailable without verified source/reuse terms.
 - Do not modify `public/arabic-sign/model/tmp5p8d9a03/` (permission denied).
+
+## Submission / delivery candidate
+
+- Final submission source: the submission-candidate-v1 tag after the deployment configuration checkpoint.
+- Restore tag: `submission-candidate-v1` (will be advanced only if final deployment configuration is committed).
+- Hosting: Vercel static Vite deployment, with `vercel.json` SPA fallback.
+- Public URL: pending Vercel authentication.
+- Final checks before deployment: unit tests, typecheck, build, and Playwright E2E must be green.
+- Camera and model verification on the public HTTPS origin remains pending the deployment URL.
+
+### Explicitly deferred
+- Voice recitation
+- Further Progress visual changes
+- Dark mode
+- English localization
+- Expanded PWA work
+- Blind-user haptic Quran research
+- Additional verified Tafsir and sign-Mushaf sources
