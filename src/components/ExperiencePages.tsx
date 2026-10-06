@@ -1,13 +1,12 @@
 import { useState } from 'react';
 import type { LocalAttempt } from '../lib/attemptHistory';
-import { clearLocalActivities, deriveExperienceProgress, readLocalActivities, readLocalProfile, saveLocalProfile, type LocalProfile } from '../lib/localExperience';
+import { clearLocalActivities, readLocalActivities, readLocalProfile, saveLocalProfile, type LocalProfile } from '../lib/localExperience';
 import { clearAccessibilitySettings, readAccessibilitySettings, saveAccessibilitySettings, type AccessibilitySettings } from '../lib/accessibilitySettings';
 import { clearSavedContent, readSavedContent, removeSavedContent, type SavedQuranAyah } from '../lib/savedContent';
 import { clearLocalProfile } from '../lib/localExperience';
 import { clearAttemptHistory } from '../lib/attemptHistory';
 import { readQuranProgress } from '../lib/quranProgress';
-
-const labels = { 'first-attempt': 'أول محاولة', 'five-attempts': 'خمس محاولات', 'first-surah': 'أول سورة', 'three-day-streak': 'ثلاثة أيام نشاط' } as const;
+import { ProgressJourneyPage } from './ProgressJourneyPage';
 
 export function ProfilePage() {
   const [profile, setProfile] = useState<LocalProfile>(readLocalProfile);
@@ -43,10 +42,8 @@ export function ProfilePage() {
 
 export function ProgressPage({ attempts, reviewed }: { attempts: LocalAttempt[]; reviewed: boolean }) {
   const activities = [...readLocalActivities(), ...attempts.map((attempt) => ({ kind: 'attempt' as const, occurredAt: attempt.completedAt })), ...(reviewed ? [{ kind: 'review' as const, occurredAt: new Date().toISOString() }] : [])];
-  const progress = deriveExperienceProgress(activities, attempts.map((attempt) => attempt.accuracy));
   const quranProgress = readQuranProgress();
-  const recentDays = Array.from({ length: 28 }, (_, index) => { const date = new Date(); date.setDate(date.getDate() - (27 - index)); const key = date.toISOString().slice(0, 10); return { key, active: activities.some((activity) => activity.occurredAt.slice(0, 10) === key) }; });
-  return <main className="info-page" dir="rtl"><section className="page-heading"><p className="eyebrow">تقدم محلي</p><h1>تقدمي</h1><p>النقاط والحديقة تعكسان نشاطك المسجل، ولا تمثل ثوابًا أو حكمًا على الحفظ.</p></section><section className="garden-journey" aria-label="رحلة حديقة أُنملة"><div className={`garden-visual garden-${progress.garden}`} aria-hidden="true"><span>✦</span></div><div><p className="eyebrow">حديقة أُنملة</p><h2>رحلتك تنمو مع الممارسة</h2><p>تسجل النقاط نشاطك المحلي فقط.</p></div></section><section className="khatmah-tracks"><article><span>ختمة التلاوة</span><strong>{Math.floor(quranProgress.readingSeconds / 60)} د</strong><small>وقت قراءة نشط مسجل محليًا</small></article><article><span>ختمة الاستماع</span><strong>{Math.floor(quranProgress.listeningSeconds / 60)} د</strong><small>وقت استماع مسجل محليًا</small></article><article><span>المراجعة / التسميع</span><strong>{quranProgress.reviewAttempts + attempts.length}</strong><small>محاولات وعمليات مراجعة</small></article></section><section className="progress-dashboard"><article><span>نقاط التقدم</span><strong>{progress.points}</strong></article><article><span>سلسلة الاستمرار</span><strong>{progress.streak} أيام</strong></article><article><span>حديقة أُنملة</span><strong>{({ seed: 'بذرة', seedling: 'شتلة', plant: 'نبتة', tree: 'شجرة', garden: 'حديقة مزهرة' }[progress.garden])}</strong></article><article><span>أفضل محاولة</span><strong>{progress.bestAccuracy === null ? '—' : `${(progress.bestAccuracy * 100).toFixed(1)}%`}</strong></article></section><section className="activity-heatmap" aria-label="نشاط آخر 28 يومًا"><div><p className="eyebrow">استمرارية</p><h2>نشاط آخر 28 يومًا</h2></div><div className="heatmap-grid">{recentDays.map((day) => <span key={day.key} className={day.active ? 'is-active' : ''} title={day.key} />)}</div></section><section className="access-card"><h2>إنجازاتك</h2><p>{progress.achievements.length ? progress.achievements.map((item) => labels[item as keyof typeof labels]).join(' · ') : 'أكمل نشاطًا ذا معنى لبدء تقدمك.'}</p><h2>تحدي اليوم</h2><p>{({ attempt: 'أكمل محاولة تسميع', review: 'سجّل مراجعة آية', 'surah-read': 'اقرأ سورة', 'saved-item': 'احفظ موردًا للعودة إليه' }[progress.challenge])}</p></section></main>;
+  return <ProgressJourneyPage activities={activities} attempts={attempts} quranProgress={quranProgress} />;
 }
 
 export function SavedContentPage({ onOpenQuran }: { onOpenQuran: () => void }) {

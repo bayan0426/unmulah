@@ -96,3 +96,14 @@ test('desktop header keeps brand right, navigation centered, and More left', asy
   await expect(page.getByRole('menu')).not.toContainText('بياناتي');
   await expect(page.getByRole('menu')).not.toContainText('الوصول بالإشارة');
 });
+
+
+test('Progress page presents the Quran journey for a new user', async ({ page }) => {
+  await page.goto('/progress');
+  await expect(page.getByRole('heading', { name: /المرحلة الأولى/ })).toBeVisible();
+  await expect(page.locator('.journey-map')).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'مستوياتي في مسارات التعلم' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'إنجازاتك' })).toBeVisible();
+  await expect(page.locator('.achievement-card.is-locked').first()).toBeVisible();
+  await expect(page.locator('.header-nav a[aria-current="page"]')).toContainText('تقدمي');
+});

@@ -13,6 +13,13 @@
 - The header continues to use the original logo, with a larger desktop/mobile mark while preserving its three-column RTL placement.
 - Smart Text remains the separate advanced detailed-review route.
 
+## Progress journey
+- `ProgressJourneyPage` turns local activity, local attempt history, and the separate reading/listening/review counters into a Quran-journey view. It does not write any new activity or infer Quran access from the page opening.
+- `src/data/progressJourney.ts` contains the three extensible stage definitions: البداية، الاستمرار، والثبات. Nodes are motivational only and never gate Quran access.
+- `src/lib/progressJourney.ts` derives current/longest local-calendar streaks, active days, real reading/listening minutes, completed sign attempts, reviews, stage progress, and the next incomplete milestone.
+- Current real metrics: active reading seconds, listening seconds, recorded reviews, local completed sign attempts, and local activity dates. Memorization/Hizb/Juz measurements intentionally remain empty because no trustworthy memorization data exists.
+- Achievement cards are calculated from those same real metrics; a locked card is a progress state, never a claim that Quran content is unavailable.
+
 ## Validation
 - `npm.cmd test`: 61 passing
 - `npm.cmd run typecheck`: passing
